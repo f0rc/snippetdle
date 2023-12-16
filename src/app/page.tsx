@@ -9,36 +9,55 @@ export default function Home() {
   const audioPlayer = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
 
-  const [playCount, setPlayCount] = useState(0); // Track play count
-  const playDuration = 5; // Duration for each play in seconds
-  const maxPlays = 4; // Number of times to play for playDuration
   const [volume, setVolume] = useState(30);
 
   useEffect(() => {
     if (audioPlayer.current) {
+      console.log("volume", volume);
       audioPlayer.current.volume = volume / 100;
+
+      setVolume(volume);
     }
   }, [volume]);
 
-  const [stepCount, setStepCount] = useState(0);
+  const [songStep, setSongStep] = useState(1);
+
+  useEffect(() => {
+    if (audioPlayer.current) {
+      audioPlayer.current.addEventListener("timeupdate", () => {
+        const progressBar = document.getElementById("progressBar");
+        if (progressBar && audioPlayer.current) {
+          const currentProgress =
+            (audioPlayer.current.currentTime / audioPlayer.current.duration) *
+            100;
+
+          const width = Math.floor(currentProgress);
+
+          console.log("width", width);
+
+          progressBar.style.width = `${width}%`;
+        }
+      });
+    }
+  }, []);
 
   const handlePlay = async () => {
-    if (audioPlayer.current) {
-      setIsPlaying(true);
-      audioPlayer.current.currentTime = 0; // Reset audio to the beginning
+    if (audioPlayer.current && !isPlaying && songStep < 5) {
+      audioPlayer.current.currentTime = 0;
 
-      if (stepCount < maxPlays) {
-        // For the first 4 clicks, play for playDuration seconds
+      while (audioPlayer.current.currentTime <= songStep) {
+        setIsPlaying(true);
         await audioPlayer.current.play();
-        setTimeout(() => {
-          console.log("pause");
-          console.log(stepCount);
-          audioPlayer.current?.pause();
-          setIsPlaying(false);
-          setStepCount(stepCount + 1);
-        }, playDuration * 1000);
-      } else {
-        // On the 5th click, play the full song
+      }
+      audioPlayer.current.pause();
+      setIsPlaying(false);
+      setSongStep(songStep + 1);
+    } else if (audioPlayer.current && isPlaying) {
+      setIsPlaying(false);
+      audioPlayer.current.pause();
+    } else if (songStep === 5) {
+      // play the rest of the song
+      if (audioPlayer.current) {
         await audioPlayer.current.play();
         setIsPlaying(true);
       }
@@ -53,30 +72,57 @@ export default function Home() {
           {/* IMAGE */}
           <div className="h-40 w-40 rounded-md bg-black" />
           {/* PLAYER BUTTON */}
-          <div
-            className="h-20 w-20 rounded-full bg-[#E2E941]"
+          <button
+            className="flex h-20 w-20 cursor-pointer items-center justify-center rounded-full bg-[#E2E941] text-black disabled:cursor-not-allowed disabled:bg-gray-400"
             onClick={handlePlay}
-          />
+            disabled={isPlaying && songStep < 5}
+          >
+            Play
+          </button>
 
           <div className="flex flex-grow flex-col">
             {/* META DATA */}
             <div className="flex flex-col">
+              <p>Try: {songStep}</p>
               <p>Song Name</p>
               <p>Artist Name</p>
             </div>
             {/* PLAYER */}
             <div className="relative flex w-full flex-grow items-center">
               <audio ref={audioPlayer} src={currentSong} preload="true" loop />
+
               {/* two divs with 5 sections, one div is the background and the other is overlay indicating the elapsed time */}
-              <div className="h-2 w-full bg-[#E2E941]" />
-              <div className="absolute h-2 w-[50%] bg-[#16222A]" />
-              {/* PLAYER CONTROLS */}
+              <div className="h-2 w-full bg-[#16222A]" />
+              <div
+                className="absolute h-2 bg-[#E2E941]"
+                id="progressBar"
+                style={{
+                  transition: "all 0.05s ease-in-out", // Adding transition inline
+                }}
+              />
             </div>
+          </div>
+          <div>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={volume}
+              onChange={(e) => setVolume(parseInt(e.target.value))}
+              className="w-full accent-[#E2E941]"
+              id=""
+            />
           </div>
         </div>
 
         {/* SUGGESTION INPUT DIV */}
-        <div></div>
+        <div>
+          <input
+            type="text"
+            placeholder="Suggest a song"
+            className="w-full text-black accent-[#E2E941]"
+          />
+        </div>
       </div>
     </main>
   );
