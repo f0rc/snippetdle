@@ -2,6 +2,7 @@ import { relations, sql } from "drizzle-orm";
 import {
   index,
   integer,
+  numeric,
   pgTable,
   primaryKey,
   serial,
@@ -147,5 +148,16 @@ export const Artist = pgTable(
   },
   (artist) => ({
     idIdx: index("id_idx").on(artist.id),
+  }),
+);
+
+export const spotifySecret = pgTable(
+  "spotifySecret",
+  {
+    access_token: text("access_token").primaryKey(),
+    expires_in: numeric("expires_in").notNull(),
+  },
+  (spotifySecret) => ({
+    spotifyIndex: index("spotifyIndex").on(spotifySecret.access_token),
   }),
 );

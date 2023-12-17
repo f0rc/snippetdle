@@ -1,7 +1,10 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
+import { api } from "~/trpc/react";
 
 export default function Home() {
+  // const gameData = api.game.
+
   const [currentSong] = useState("");
 
   const audioPlayer = useRef<HTMLAudioElement>(null);
