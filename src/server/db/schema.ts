@@ -7,6 +7,7 @@ import {
   serial,
   text,
   timestamp,
+  uuid,
   varchar,
 } from "drizzle-orm/pg-core";
 import { type AdapterAccount } from "next-auth/adapters";
@@ -66,7 +67,9 @@ export const accounts = pgTable(
     session_state: text("session_state"),
   },
   (account) => ({
-    compoundKey: primaryKey(account.provider, account.providerAccountId),
+    compoundKey: primaryKey({
+      columns: [account.provider, account.providerAccountId],
+    }),
     userIdIdx: index("userId_idx").on(account.userId),
   }),
 );
@@ -101,6 +104,48 @@ export const verificationTokens = pgTable(
     expires: timestamp("expires", { mode: "date" }).notNull(),
   },
   (vt) => ({
-    compoundKey: primaryKey(vt.identifier, vt.token),
+    compoundKey: primaryKey({ columns: [vt.identifier, vt.token] }),
+  }),
+);
+
+export const Song = pgTable(
+  "Song",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    preview_url: text("preview_url"),
+    album_name: text("album_name"),
+    album_id: text("album_id"),
+    album_uri: text("album_uri"),
+    album_image: text("album_image"),
+    album_release_date: text("album_release_date"),
+
+    artist_name: text("artist_name"),
+    artist_id: text("artist_id"),
+    artist_uri: text("artist_uri"),
+
+    createdById: varchar("createdById", { length: 255 }).notNull(),
+    createdAt: timestamp("created_at")
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    updatedAt: timestamp("updatedAt"),
+  },
+  (song) => ({
+    idIdx: index("id_idx").on(song.id),
+  }),
+);
+
+export const Artist = pgTable(
+  "Artist",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    external_urls: text("external_urls"),
+    href: text("href"),
+    name: text("name"),
+    type: text("type"),
+    uri: text("uri"),
+    images: text("images"),
+  },
+  (artist) => ({
+    idIdx: index("id_idx").on(artist.id),
   }),
 );

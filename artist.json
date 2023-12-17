@@ -1,0 +1,199 @@
+{
+  "meta": { "status": 200 },
+  "response": {
+    "sections": [
+      {
+        "type": "artist",
+        "hits": [
+          {
+            "highlights": [],
+            "index": "artist",
+            "type": "artist",
+            "result": {
+              "_type": "artist",
+              "api_path": "/artists/1599675",
+              "header_image_url": "https://images.genius.com/33526fae949eca0c337d03fa9b93b364.1000x562x1.png",
+              "id": 1599675,
+              "image_url": "https://images.genius.com/69fb560dfa6184da4b62698df2e09231.800x800x1.png",
+              "index_character": "o",
+              "is_meme_verified": false,
+              "is_verified": true,
+              "name": "Olivia Rodrigo",
+              "slug": "Olivia-rodrigo",
+              "url": "https://genius.com/artists/Olivia-rodrigo",
+              "iq": 2239
+            }
+          },
+          {
+            "highlights": [],
+            "index": "artist",
+            "type": "artist",
+            "result": {
+              "_type": "artist",
+              "api_path": "/artists/1476681",
+              "header_image_url": "https://images.genius.com/981ce9033ccdd01729beadc4f4eb732c.600x600x241.gif",
+              "id": 1476681,
+              "image_url": "https://images.genius.com/29e0cc0219f861c08132e9eaf4ec31de.640x640x1.jpg",
+              "index_character": "y",
+              "is_meme_verified": false,
+              "is_verified": true,
+              "name": "Yeat",
+              "slug": "Yeat",
+              "url": "https://genius.com/artists/Yeat",
+              "iq": 2636
+            }
+          },
+          {
+            "highlights": [],
+            "index": "artist",
+            "type": "artist",
+            "result": {
+              "_type": "artist",
+              "api_path": "/artists/540192",
+              "header_image_url": "https://images.genius.com/afd77fc0fad69f25fa80cf642b1124e6.640x640x1.jpg",
+              "id": 540192,
+              "image_url": "https://images.genius.com/46ce63308d08e978352ed7970d76ebe1.478x478x1.jpg",
+              "index_character": "o",
+              "is_meme_verified": false,
+              "is_verified": true,
+              "name": "Olivia O’Brien",
+              "slug": "Olivia-obrien",
+              "url": "https://genius.com/artists/Olivia-obrien",
+              "iq": 3906
+            }
+          },
+          {
+            "highlights": [],
+            "index": "artist",
+            "type": "artist",
+            "result": {
+              "_type": "artist",
+              "api_path": "/artists/177",
+              "header_image_url": "https://s3.amazonaws.com/rapgenius/bilal-artist.jpg",
+              "id": 177,
+              "image_url": "https://s3.amazonaws.com/rapgenius/bilal-artist.jpg",
+              "index_character": "b",
+              "is_meme_verified": true,
+              "is_verified": true,
+              "name": "Bilal",
+              "slug": "Bilal",
+              "url": "https://genius.com/artists/Bilal",
+              "iq": 1581
+            }
+          },
+          {
+            "highlights": [],
+            "index": "artist",
+            "type": "artist",
+            "result": {
+              "_type": "artist",
+              "api_path": "/artists/1020188",
+              "header_image_url": "https://images.genius.com/6197b1b6660972aa393511de56efc662.1000x397x1.jpg",
+              "id": 1020188,
+              "image_url": "https://images.genius.com/556e62eb2c1f17a042243ade3c1cd214.554x554x1.jpg",
+              "index_character": "o",
+              "is_meme_verified": false,
+              "is_verified": true,
+              "name": "Oliver Tree",
+              "slug": "Oliver-tree",
+              "url": "https://genius.com/artists/Oliver-tree",
+              "iq": 3568
+            }
+          },
+          {
+            "highlights": [],
+            "index": "artist",
+            "type": "artist",
+            "result": {
+              "_type": "artist",
+              "api_path": "/artists/330390",
+              "header_image_url": "https://images.genius.com/966865b36518603d14728ebd37414c33.1000x568x1.png",
+              "id": 330390,
+              "image_url": "https://images.genius.com/99681b5605315ebb90777aa691380a08.407x407x1.png",
+              "index_character": "d",
+              "is_meme_verified": false,
+              "is_verified": false,
+              "name": "Dove Cameron",
+              "slug": "Dove-cameron",
+              "url": "https://genius.com/artists/Dove-cameron"
+            }
+          },
+          {
+            "highlights": [],
+            "index": "artist",
+            "type": "artist",
+            "result": {
+              "_type": "artist",
+              "api_path": "/artists/129552",
+              "header_image_url": "https://images.genius.com/fb1bf6772e9de6fc09ab3b0388790c89.400x400x1.jpg",
+              "id": 129552,
+              "image_url": "https://images.genius.com/ce04cb25dcf9c0574a213dcd0605670e.400x400x1.jpg",
+              "index_character": "o",
+              "is_meme_verified": false,
+              "is_verified": false,
+              "name": "Olivia Olson",
+              "slug": "Olivia-olson",
+              "url": "https://genius.com/artists/Olivia-olson"
+            }
+          },
+          {
+            "highlights": [],
+            "index": "artist",
+            "type": "artist",
+            "result": {
+              "_type": "artist",
+              "api_path": "/artists/24620",
+              "header_image_url": "https://images.genius.com/576d3cf87f0a63e6c959f30c06abcd06.640x796x1.jpg",
+              "id": 24620,
+              "image_url": "https://images.genius.com/0f6624c6438045bae61dce0807296ef4.640x640x1.jpg",
+              "index_character": "k",
+              "is_meme_verified": false,
+              "is_verified": false,
+              "name": "KESI",
+              "slug": "Kesi",
+              "url": "https://genius.com/artists/Kesi"
+            }
+          },
+          {
+            "highlights": [],
+            "index": "artist",
+            "type": "artist",
+            "result": {
+              "_type": "artist",
+              "api_path": "/artists/290929",
+              "header_image_url": "https://images.genius.com/798bf5c8f3b9861cbb83b3fadb4cde94.640x640x1.jpg",
+              "id": 290929,
+              "image_url": "https://images.genius.com/798bf5c8f3b9861cbb83b3fadb4cde94.640x640x1.jpg",
+              "index_character": "r",
+              "is_meme_verified": false,
+              "is_verified": false,
+              "name": "Renegade El Rey",
+              "slug": "Renegade-el-rey",
+              "url": "https://genius.com/artists/Renegade-el-rey"
+            }
+          },
+          {
+            "highlights": [],
+            "index": "artist",
+            "type": "artist",
+            "result": {
+              "_type": "artist",
+              "api_path": "/artists/260188",
+              "header_image_url": "https://images.genius.com/0e9d6a8ccf230e44a8bfa1019a4f7d09.667x1000x1.jpg",
+              "id": 260188,
+              "image_url": "https://images.genius.com/912b84f202ec8f643989e4a3dcee741f.1000x1000x1.jpg",
+              "index_character": "o",
+              "is_meme_verified": false,
+              "is_verified": true,
+              "name": "Oliver Francis",
+              "slug": "Oliver-francis",
+              "url": "https://genius.com/artists/Oliver-francis",
+              "iq": 107
+            }
+          }
+        ]
+      }
+    ],
+    "next_page": 2
+  }
+}

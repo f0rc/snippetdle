@@ -2,9 +2,7 @@
 import { useState, useRef, useEffect } from "react";
 
 export default function Home() {
-  const [currentSong] = useState(
-    "https://p.scdn.co/mp3-preview/023ccc9c406cafc5a3e3b4dd524b9092b45dacbf?cid=68602c7d0a1c4cc3a1a8e0aea88a56d0.mp3",
-  );
+  const [currentSong] = useState("");
 
   const audioPlayer = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
