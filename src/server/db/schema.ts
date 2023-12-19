@@ -71,7 +71,7 @@ export const accounts = pgTable(
     compoundKey: primaryKey({
       columns: [account.provider, account.providerAccountId],
     }),
-    userIdIdx: index("userId_idx").on(account.userId),
+    userIdIdx: index("accountUserId_idx").on(account.userId),
   }),
 );
 
@@ -109,48 +109,6 @@ export const verificationTokens = pgTable(
   }),
 );
 
-export const Song = pgTable(
-  "Song",
-  {
-    id: uuid("id").primaryKey().defaultRandom(),
-    preview_url: text("preview_url"),
-    album_name: text("album_name"),
-    album_id: text("album_id"),
-    album_uri: text("album_uri"),
-    album_image: text("album_image"),
-    album_release_date: text("album_release_date"),
-
-    artist_name: text("artist_name"),
-    artist_id: text("artist_id"),
-    artist_uri: text("artist_uri"),
-
-    createdById: varchar("createdById", { length: 255 }).notNull(),
-    createdAt: timestamp("created_at")
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
-    updatedAt: timestamp("updatedAt"),
-  },
-  (song) => ({
-    idIdx: index("id_idx").on(song.id),
-  }),
-);
-
-export const Artist = pgTable(
-  "Artist",
-  {
-    id: uuid("id").primaryKey().defaultRandom(),
-    external_urls: text("external_urls"),
-    href: text("href"),
-    name: text("name"),
-    type: text("type"),
-    uri: text("uri"),
-    images: text("images"),
-  },
-  (artist) => ({
-    idIdx: index("id_idx").on(artist.id),
-  }),
-);
-
 export const spotifySecret = pgTable(
   "spotifySecret",
   {
@@ -161,3 +119,54 @@ export const spotifySecret = pgTable(
     spotifyIndex: index("spotifyIndex").on(spotifySecret.access_token),
   }),
 );
+
+export const Song = pgTable(
+  "Song",
+  {
+    id: uuid("id").defaultRandom().unique(),
+    preview_url: text("preview_url"),
+    album_name: text("album_name").notNull(),
+    album_image: text("album_image").notNull(),
+    album_release_date: text("album_release_date"),
+
+    artist_name: text("artist_name").notNull(),
+
+    playlistId: integer("playlistId").notNull(),
+
+    createdById: varchar("createdById").notNull(),
+    createdAt: timestamp("created_at")
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    updatedAt: timestamp("updatedAt").default(sql`CURRENT_TIMESTAMP`),
+  },
+  (song) => ({
+    pk: primaryKey({ columns: [song.album_name, song.artist_name] }),
+    songIndex: index("id_idx").on(song.id),
+  }),
+);
+
+export const playlist = pgTable("playlist", {
+  id: serial("id").primaryKey().unique(),
+  name: varchar("name", { length: 256 }),
+  createdById: varchar("createdById").notNull(),
+  createdAt: timestamp("created_at")
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: timestamp("updatedAt"),
+});
+
+// export const playlistOnSong = pgTable(
+//   "playlistOnSong",
+//   {
+//     playlistId: integer("playlistId").notNull(),
+//     songId: uuid("songId").notNull(),
+//   },
+//   (t) => ({
+//     compoundKey: primaryKey({ columns: [t.playlistId, t.songId] }),
+//   }),
+// );
+
+// export const playlistRelations = relations(playlist, ({ many }) => ({
+//   // user: one(users, { fields: [playlist.createdById], references: [users.id] }),
+//   songs: many(Song),
+// }));

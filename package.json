@@ -8,6 +8,7 @@
     "db:push": "dotenv drizzle-kit push:pg",
     "db:studio": "dotenv drizzle-kit studio",
     "db:gen": "dotenv drizzle-kit generate:pg",
+    "db:reset": "export PGPASSWORD='test'; psql -f ./dropschema.sql -h localhost -U test -p 6666 -d test",
     "dev": "next dev",
     "lint": "next lint",
     "start": "next start"
@@ -21,6 +22,7 @@
     "@trpc/react-query": "^10.43.6",
     "@trpc/server": "^10.43.6",
     "@types/pg": "^8.10.9",
+    "drizzle-kit": "^0.20.7",
     "drizzle-orm": "^0.29.1",
     "next": "^14.0.3",
     "next-auth": "^4.24.5",
@@ -41,7 +43,6 @@
     "@typescript-eslint/parser": "^6.11.0",
     "autoprefixer": "^10.4.14",
     "dotenv-cli": "^7.3.0",
-    "drizzle-kit": "^0.20.6",
     "eslint": "^8.54.0",
     "postcss": "^8.4.31",
     "prettier": "^3.1.0",
