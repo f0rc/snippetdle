@@ -10,11 +10,13 @@ function CreateGame() {
   });
 
   const [spotifyUrl, setSpotifyUrl] = useState("");
+  const [playlistName, setPlaylistName] = useState("");
 
   const handleSubmit = async () => {
     console.log("submit to db");
     createPlaylist.mutate({
       spotifyPlaylistUrl: spotifyUrl,
+      playlistName: playlistName,
     });
   };
 
@@ -26,6 +28,14 @@ function CreateGame() {
           type="text"
           value={spotifyUrl}
           onChange={(e) => setSpotifyUrl(e.target.value)}
+          className="text-black"
+        />
+
+        <input
+          type="text"
+          value={playlistName}
+          onChange={(e) => setPlaylistName(e.target.value)}
+          className="text-black"
         />
 
         <button onClick={handleSubmit}>Submit</button>

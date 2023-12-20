@@ -123,15 +123,15 @@ export const spotifySecret = pgTable(
 export const Song = pgTable(
   "Song",
   {
-    id: uuid("id").defaultRandom().unique(),
+    id: uuid("id").defaultRandom().notNull(),
     preview_url: text("preview_url"),
     album_name: text("album_name").notNull(),
-    album_image: text("album_image").notNull(),
+    album_image: text("album_image"),
     album_release_date: text("album_release_date"),
 
     artist_name: text("artist_name").notNull(),
 
-    playlistId: integer("playlistId").notNull(),
+    playlistId: text("playlistId").array().notNull(),
 
     createdById: varchar("createdById").notNull(),
     createdAt: timestamp("created_at")
@@ -145,26 +145,31 @@ export const Song = pgTable(
   }),
 );
 
+// export const SongRelations = relations(Song, ({ many }) => ({
+//   // user: one(users, { fields: [playlist.createdById], references: [users.id] }),
+//   playlist: many(playlist),
+// }));
+
 export const playlist = pgTable("playlist", {
-  id: serial("id").primaryKey().unique(),
-  name: varchar("name", { length: 256 }),
+  id: text("id").primaryKey(),
+  name: varchar("name").notNull(),
   createdById: varchar("createdById").notNull(),
   createdAt: timestamp("created_at")
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),
-  updatedAt: timestamp("updatedAt"),
+  updatedAt: timestamp("updatedAt").default(sql`CURRENT_TIMESTAMP`),
 });
 
-// export const playlistOnSong = pgTable(
-//   "playlistOnSong",
-//   {
-//     playlistId: integer("playlistId").notNull(),
-//     songId: uuid("songId").notNull(),
-//   },
-//   (t) => ({
-//     compoundKey: primaryKey({ columns: [t.playlistId, t.songId] }),
-//   }),
-// );
+export const playlistOnSong = pgTable(
+  "playlistOnSong",
+  {
+    playlistId: text("playlistId").notNull(),
+    songId: uuid("songId").notNull(),
+  },
+  (t) => ({
+    compoundKey: primaryKey({ columns: [t.playlistId, t.songId] }),
+  }),
+);
 
 // export const playlistRelations = relations(playlist, ({ many }) => ({
 //   // user: one(users, { fields: [playlist.createdById], references: [users.id] }),
