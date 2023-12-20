@@ -7,7 +7,7 @@ import {
 import { getSpotifyToken, type SpotifyResponse } from "./utils";
 
 import { Song, playlist as playlistSchema } from "~/server/db/schema";
-import { eq, sql } from "drizzle-orm";
+import { eq, sql, ne } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 
 export const gameRouter = createTRPCRouter({
@@ -102,10 +102,15 @@ export const gameRouter = createTRPCRouter({
           set: {
             ...Object.fromEntries(
               Object.keys(songDataList[0] ?? {}).map((x) => {
-                // console.log(x);
-                // This will append to the playlistId array instead of replacing it
+                // append to the playlistId array instead of replacing it
                 if (x === "playlistId") {
-                  return [x, sql.raw(`array_append(excluded."${x}", "${x}")`)];
+                  console.log(x);
+                  return [
+                    x,
+                    sql.raw(
+                      `ARRAY(SELECT DISTINCT UNNEST(ARRAY_APPEND(COALESCE("Song"."playlistId", '{}'), '${url}')))`,
+                    ),
+                  ];
                 } else {
                   return [x, sql.raw(`excluded."${x}"`)];
                 }

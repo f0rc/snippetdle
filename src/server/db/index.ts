@@ -8,7 +8,7 @@ export const db = drizzle(
   new Pool({
     connectionString: env.DATABASE_URL,
   }),
-  { schema },
+  { schema, logger: true },
 );
 
 export type dbType = typeof db;

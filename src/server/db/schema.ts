@@ -131,7 +131,7 @@ export const Song = pgTable(
 
     artist_name: text("artist_name").notNull(),
 
-    playlistId: text("playlistId").array().notNull(),
+    playlistId: text("playlistId").array(),
 
     createdById: varchar("createdById").notNull(),
     createdAt: timestamp("created_at")
