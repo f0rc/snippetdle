@@ -26,7 +26,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`font-sans ${inter.variable}`}>
         <TRPCReactProvider cookies={cookies().toString()}>
-          <div className="bg-gradient-to-b from-[#3A6073] to-[#16222A] text-[#EAF2F5]">
+          <div className="h-screen bg-gradient-to-b from-[#3A6073] to-[#16222A] text-[#EAF2F5]">
             <Nav />
             {children}
           </div>

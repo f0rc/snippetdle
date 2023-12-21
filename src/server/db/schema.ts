@@ -145,10 +145,10 @@ export const Song = pgTable(
   }),
 );
 
-// export const SongRelations = relations(Song, ({ many }) => ({
-//   // user: one(users, { fields: [playlist.createdById], references: [users.id] }),
-//   playlist: many(playlist),
-// }));
+export const SongRelations = relations(Song, ({ many }) => ({
+  // user: one(users, { fields: [playlist.createdById], references: [users.id] }),
+  playlist: many(playlist),
+}));
 
 export const playlist = pgTable("playlist", {
   id: text("id").primaryKey(),
@@ -160,18 +160,7 @@ export const playlist = pgTable("playlist", {
   updatedAt: timestamp("updatedAt").default(sql`CURRENT_TIMESTAMP`),
 });
 
-export const playlistOnSong = pgTable(
-  "playlistOnSong",
-  {
-    playlistId: text("playlistId").notNull(),
-    songId: uuid("songId").notNull(),
-  },
-  (t) => ({
-    compoundKey: primaryKey({ columns: [t.playlistId, t.songId] }),
-  }),
-);
-
-// export const playlistRelations = relations(playlist, ({ many }) => ({
-//   // user: one(users, { fields: [playlist.createdById], references: [users.id] }),
-//   songs: many(Song),
-// }));
+export const playlistRelations = relations(playlist, ({ many }) => ({
+  // user: one(users, { fields: [playlist.createdById], references: [users.id] }),
+  songs: many(Song),
+}));

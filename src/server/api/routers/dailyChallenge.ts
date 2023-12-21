@@ -138,6 +138,69 @@ export const gameRouter = createTRPCRouter({
     .query(async ({ input, ctx }) => {
       console.log("Get game from db?");
     }),
+
+  getAllPlaylists: publicProcedure
+    // .input(z.object({}))
+    .query(async ({ input, ctx }) => {
+      const playlists = await ctx.db
+        .select({
+          playlist_id: playlistSchema.id,
+          playlist_name: playlistSchema.name,
+          playlist_songs: {
+            id: Song.id,
+            preview_url: Song.preview_url,
+            album_name: Song.album_name,
+            album_image: Song.album_image,
+            album_release_date: Song.album_release_date,
+            artist_name: Song.artist_name,
+          },
+        })
+        .from(playlistSchema)
+        .leftJoin(Song, sql`${playlistSchema.id} = ANY(${Song.playlistId})`);
+
+      // create a new object where the playlist contains all of its songs instead of having 1 playlist per song
+
+      const playlistWithSongs = playlists.reduce(
+        (acc, curr) => {
+          if (acc[curr.playlist_id]) {
+            if (curr.playlist_songs) {
+              acc[curr.playlist_id]!.playlist_songs?.push(curr.playlist_songs);
+            }
+          } else {
+            acc[curr.playlist_id] = {
+              playlist_id: curr.playlist_id,
+              playlist_name: curr.playlist_name,
+              playlist_songs: curr.playlist_songs
+                ? [curr.playlist_songs]
+                : null,
+            };
+          }
+
+          return acc;
+        },
+        {} as Record<
+          string,
+          {
+            playlist_id: string;
+            playlist_name: string;
+            playlist_songs:
+              | {
+                  id: string;
+                  preview_url: string | null;
+                  album_name: string;
+                  album_image: string | null;
+                  album_release_date: string | null;
+                  artist_name: string;
+                }[]
+              | null;
+          }
+        >,
+      );
+
+      return {
+        playlistWithSongs,
+      };
+    }),
 });
 
 function getPlaylistIdFromUrl(url: string) {
