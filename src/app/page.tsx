@@ -4,7 +4,7 @@ export default async function Home() {
   // const gameData = api.game.
 
   return (
-    <main className="flex h-full w-full flex-row items-center justify-center">
+    <main className="flex flex-row items-center justify-center">
       <div className="flex h-full w-full justify-center lg:pl-40">
         <GameMain />
       </div>
