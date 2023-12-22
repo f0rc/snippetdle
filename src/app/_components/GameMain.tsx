@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
 
 const GameMain = () => {
@@ -63,63 +64,75 @@ const GameMain = () => {
     }
   };
 
-  const [cells, setCells] = useState(1);
+  const [cells, setCells] = useState(5);
+
+  const [hidden, setHidden] = useState(false);
   return (
-    <div className="flex w-full max-w-4xl flex-col gap-4">
-      <div className="flex w-full flex-row items-center justify-center space-x-4">
-        {/* IMAGE */}
-        <div className="h-40 w-40 rounded-md bg-black" />
+    <div className="flex h-full w-full flex-col items-center">
+      {/* IMAGE */}
+      <div className="flex w-full flex-row items-center justify-center gap-4">
+        <div className="">
+          <div
+            className="absolute h-40 w-40 rounded-md bg-black"
+            style={{
+              display: hidden ? "none" : "block",
+            }}
+          />
+          <img
+            src="https://i.scdn.co/image/ab67616d00001e02f8f2bc4006346cb97bb8b74f"
+            alt=""
+            width={160}
+            height={160}
+            className="h-40 w-40 rounded-md border-none bg-black"
+          />
+        </div>
         {/* PLAYER BUTTON */}
         <button
-          className="flex h-20 w-20 cursor-pointer items-center justify-center rounded-full bg-[#E2E941] text-black disabled:cursor-not-allowed disabled:bg-gray-400"
+          className="flex h-20 w-20 items-center justify-center rounded-full bg-[#16222A]"
           onClick={handlePlay}
           disabled={isPlaying && songStep < 5}
         >
-          Play
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={2}
+            stroke="currentColor"
+            className="h-10 w-10"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z"
+            />
+          </svg>
         </button>
 
-        <div className="flex flex-grow flex-col">
+        <div className="w-1/2 gap-4">
           {/* META DATA */}
-          <div className="flex flex-col">
-            <p>Try: {songStep}</p>
-            <p>Song Name</p>
-            <p>Artist Name</p>
+          <div className="flex flex-col pb-4">
+            <p className="text-xl">Song Name</p>
+            <p className="text-base">Artist Name</p>
           </div>
           {/* PLAYER */}
-          <div className="relative flex w-full flex-grow items-center">
+          <div className="rounded-full">
             <audio ref={audioPlayer} src={currentSong} preload="true" loop />
 
             {/* two divs with 5 sections, one div is the background and the other is overlay indicating the elapsed time */}
-            <div className="h-2 w-full bg-[#16222A]" />
+            <div className="h-2 w-full rounded-full bg-[#16222A]" />
             <div
-              className="absolute h-2 bg-[#E2E941]"
+              className="absolute h-2 rounded-full bg-[#E2E941]"
               id="progressBar"
               style={{
                 transition: "all 0.05s ease-in-out", // Adding transition inline
               }}
             />
+
+            <div className="flex flex-row justify-between pt-2">
+              <p>0:00</p>
+              <p>0:30</p>
+            </div>
           </div>
-        </div>
-      </div>
-
-      <div className="flex w-full flex-col items-center justify-center gap-4">
-        <input
-          type="text"
-          className="h-20 w-2/5 rounded-xl p-10 text-center text-2xl font-bold text-black"
-          placeholder="Guess the artist"
-        />
-
-        <button onClick={() => setCells(cells + 1)}>+1</button>
-
-        <div className="flex w-2/5 flex-col rounded-xl bg-white transition-all duration-300 ease-in-out">
-          {Array.from({ length: cells }).map((_, i) => (
-            <button
-              key={i}
-              className="h-20 w-full rounded-xl border border-b p-4 text-center text-2xl font-bold text-black transition-all duration-500 ease-in-out hover:bg-black/10"
-            >
-              Artist
-            </button>
-          ))}
         </div>
       </div>
     </div>
@@ -127,3 +140,28 @@ const GameMain = () => {
 };
 
 export default GameMain;
+
+{
+  /* <div className="flex w-full flex-col items-center justify-center gap-4  pt-10">
+<input
+  type="text"
+  className="w-1/2 rounded-md bg-white p-4 text-xl"
+  placeholder="Guess the artist"
+/>
+
+{/* <button onClick={() => setCells(cells + 1)}>+1</button> */
+}
+
+{
+  /* <div className="flex w-1/2 flex-col rounded-md bg-white">
+  {Array.from({ length: cells }).map((_, i) => (
+    <button
+      key={i}
+      className="rounded-md border-b bg-white p-4 text-xl text-black hover:bg-gray-200"
+    >
+      Artist
+    </button>
+  ))}
+</div> */
+}
+// </div> */}

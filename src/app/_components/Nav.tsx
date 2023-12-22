@@ -6,45 +6,59 @@ const Nav = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   return (
     <>
-      <nav className="z-0 mx-auto flex w-full flex-1 p-4">
-        <div className="flex w-full flex-row">
-          <ul className="">
-            <a href="/" className="text-4xl font-black">
-              Game
-            </a>
-          </ul>
+      <div className="border-b">
+        <nav className="z-0 mx-auto flex w-full max-w-screen-2xl p-4">
+          <div className="flex w-full flex-row">
+            <ul className="">
+              <a href="/" className="text-4xl font-black">
+                Game
+              </a>
+            </ul>
 
-          <ul className="flex-1" />
-          <ul className="flex gap-4">
-            <button className="rounded-md p-2 font-semibold hover:bg-black/20">
-              Log In
-            </button>
-            <button className="rounded-md bg-yellow-400 p-2 font-semibold text-black hover:bg-yellow-300">
-              Sign Up
-            </button>
+            <ul className="flex-1" />
+            <ul className="flex gap-4">
+              <li className="hidden items-center justify-end rounded-md p-2 hover:bg-black/20 lg:flex">
+                <a href="/" className="text-xl font-semibold">
+                  Custom Games
+                </a>
+              </li>
 
-            <button
-              className="rounded-md p-2 font-semibold hover:bg-black/20 sm:hidden"
-              onClick={() => setSidebarOpen((p) => !p)}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="h-6 w-6"
+              <li className="hidden items-center justify-end rounded-md p-2 hover:bg-black/20 lg:flex">
+                <a href="/" className="text-xl font-semibold">
+                  Browse Playlists
+                </a>
+              </li>
+
+              <button className="rounded-md p-2 font-semibold hover:bg-black/20">
+                Log In
+              </button>
+              <button className="rounded-md bg-yellow-400 p-2 font-semibold text-black hover:bg-yellow-300">
+                Sign Up
+              </button>
+
+              <button
+                className="rounded-md p-2 font-semibold hover:bg-black/20 lg:hidden"
+                onClick={() => setSidebarOpen((p) => !p)}
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M3.75 9h16.5m-16.5 6.75h16.5"
-                />
-              </svg>
-            </button>
-          </ul>
-        </div>
-      </nav>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="h-6 w-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M3.75 9h16.5m-16.5 6.75h16.5"
+                  />
+                </svg>
+              </button>
+            </ul>
+          </div>
+        </nav>
+      </div>
       {sidebarOpen && (
         <>
           <div

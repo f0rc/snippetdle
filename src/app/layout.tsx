@@ -26,7 +26,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`font-sans ${inter.variable}`}>
         <TRPCReactProvider cookies={cookies().toString()}>
-          <div className="flex w-full flex-grow flex-col flex-wrap bg-gradient-to-b from-[#3A6073] to-[#16222A] pb-4 text-[#EAF2F5] sm:flex-nowrap">
+          <div className="flex h-screen w-full flex-grow flex-col flex-wrap bg-gradient-to-b from-[#3A6073] to-[#16222A] pb-4 text-[#EAF2F5] sm:flex-nowrap">
             <Nav />
             {children}
           </div>
