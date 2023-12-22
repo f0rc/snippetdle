@@ -68,10 +68,29 @@ const GameMain = () => {
 
   const [hidden, setHidden] = useState(false);
   return (
-    <div className="flex h-full w-full flex-col items-center">
-      {/* IMAGE */}
-      <div className="flex w-full flex-row items-center justify-center gap-4">
-        <div className="">
+    <div className="flex w-full max-w-4xl items-start justify-center pt-10">
+      <div className="flex w-full flex-col items-center gap-4 lg:flex-row">
+        <div className="flex flex-col items-center justify-center">
+          <button
+            className="absolute z-10 lg:hidden"
+            onClick={handlePlay}
+            disabled={isPlaying && songStep < 5}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={2}
+              stroke="currentColor"
+              className="h-10 w-10"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z"
+              />
+            </svg>
+          </button>
           <div
             className="absolute h-40 w-40 rounded-md bg-black"
             style={{
@@ -86,9 +105,10 @@ const GameMain = () => {
             className="h-40 w-40 rounded-md border-none bg-black"
           />
         </div>
-        {/* PLAYER BUTTON */}
+
+        {/* Play button only for lg+ */}
         <button
-          className="flex h-20 w-20 items-center justify-center rounded-full bg-[#16222A]"
+          className="hidden rounded-full bg-yellow-400 p-4 lg:flex"
           onClick={handlePlay}
           disabled={isPlaying && songStep < 5}
         >
@@ -108,14 +128,14 @@ const GameMain = () => {
           </svg>
         </button>
 
-        <div className="w-1/2 gap-4">
+        <div className="w-1/2 gap-4 ">
           {/* META DATA */}
           <div className="flex flex-col pb-4">
             <p className="text-xl">Song Name</p>
             <p className="text-base">Artist Name</p>
           </div>
           {/* PLAYER */}
-          <div className="rounded-full">
+          <div className="rounded-full lg:max-w-sm">
             <audio ref={audioPlayer} src={currentSong} preload="true" loop />
 
             {/* two divs with 5 sections, one div is the background and the other is overlay indicating the elapsed time */}
