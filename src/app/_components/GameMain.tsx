@@ -68,7 +68,7 @@ const GameMain = () => {
 
   const [hidden, setHidden] = useState(false);
   return (
-    <div className="flex w-full max-w-4xl items-start justify-center pt-10">
+    <div className="flex w-full max-w-4xl flex-col items-center justify-center pt-4">
       <div className="flex w-full flex-col items-center gap-4 lg:flex-row">
         <div className="flex flex-col items-center justify-center">
           <button
@@ -155,33 +155,25 @@ const GameMain = () => {
           </div>
         </div>
       </div>
+      <div className="flex flex-col gap-2 pt-4">
+        <input
+          type="text"
+          className="rounded-md bg-stone-100 p-2 text-base text-black lg:text-xl"
+          placeholder="Guess the artist"
+        />
+        <div className="flex flex-col rounded-md bg-white">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <button
+              key={i}
+              className="rounded-sm border-b border-black bg-stone-100 p-2 text-sm text-black hover:bg-stone-200 lg:text-xl"
+            >
+              Artist
+            </button>
+          ))}
+        </div>
+      </div>
     </div>
   );
 };
 
 export default GameMain;
-
-{
-  /* <div className="flex w-full flex-col items-center justify-center gap-4  pt-10">
-<input
-  type="text"
-  className="w-1/2 rounded-md bg-white p-4 text-xl"
-  placeholder="Guess the artist"
-/>
-
-{/* <button onClick={() => setCells(cells + 1)}>+1</button> */
-}
-
-{
-  /* <div className="flex w-1/2 flex-col rounded-md bg-white">
-  {Array.from({ length: cells }).map((_, i) => (
-    <button
-      key={i}
-      className="rounded-md border-b bg-white p-4 text-xl text-black hover:bg-gray-200"
-    >
-      Artist
-    </button>
-  ))}
-</div> */
-}
-// </div> */}
