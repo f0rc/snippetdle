@@ -1,5 +1,6 @@
 import { relations, sql } from "drizzle-orm";
 import {
+  boolean,
   index,
   integer,
   numeric,
@@ -123,15 +124,17 @@ export const spotifySecret = pgTable(
 export const Song = pgTable(
   "Song",
   {
-    id: uuid("id").defaultRandom().notNull(),
-    preview_url: text("preview_url"),
+    id: uuid("id").unique().defaultRandom().notNull(),
+    preview_url: text("preview_url").notNull(),
     album_name: text("album_name").notNull(),
-    album_image: text("album_image"),
-    album_release_date: text("album_release_date"),
+    album_image: text("album_image").notNull(),
+    album_release_date: text("album_release_date").notNull(),
 
     artist_name: text("artist_name").notNull(),
 
     playlistId: text("playlistId").array(),
+
+    isChallengeSong: boolean("isChallengeSong").default(false),
 
     createdById: varchar("createdById").notNull(),
     createdAt: timestamp("created_at")
@@ -145,11 +148,6 @@ export const Song = pgTable(
   }),
 );
 
-// export const SongRelations = relations(Song, ({ many }) => ({
-//   // user: one(users, { fields: [playlist.createdById], references: [users.id] }),
-//   playlist: many(playlist),
-// }));
-
 export const playlist = pgTable("playlist", {
   id: text("id").primaryKey(),
   name: varchar("name").notNull(),
@@ -160,7 +158,19 @@ export const playlist = pgTable("playlist", {
   updatedAt: timestamp("updatedAt").default(sql`CURRENT_TIMESTAMP`),
 });
 
-// export const playlistRelations = relations(playlist, ({ many }) => ({
-//   // user: one(users, { fields: [playlist.createdById], references: [users.id] }),
-//   songs: many(Song),
-// }));
+export const dailyChallenge = pgTable("dailyChallenge", {
+  id: uuid("id").primaryKey().defaultRandom(),
+
+  songId: uuid("songId")
+    .notNull()
+    .references(() => Song.id, {
+      onDelete: "cascade",
+    }),
+  date: timestamp("date").notNull(),
+
+  createdById: varchar("createdById").notNull(),
+  createdAt: timestamp("created_at")
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: timestamp("updatedAt").default(sql`CURRENT_TIMESTAMP`),
+});

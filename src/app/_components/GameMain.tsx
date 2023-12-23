@@ -1,10 +1,15 @@
 "use client";
 
-import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
+import { api } from "~/trpc/react";
+import { dailyChallengeType } from "~/trpc/utils";
 
 const GameMain = () => {
-  const [currentSong] = useState("");
+  const gameData = api.game.getDailyChallenge.useQuery();
+
+  const [currentSong] = useState(
+    gameData.data?.dailyChallenge?.song.preview_url,
+  );
 
   const audioPlayer = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -32,8 +37,6 @@ const GameMain = () => {
             100;
 
           const width = Math.floor(currentProgress);
-
-          console.log("width", width);
 
           progressBar.style.width = `${width}%`;
         }
@@ -98,7 +101,7 @@ const GameMain = () => {
             }}
           />
           <img
-            src="https://i.scdn.co/image/ab67616d00001e02f8f2bc4006346cb97bb8b74f"
+            src={gameData.data?.dailyChallenge?.song.album_image}
             alt=""
             width={160}
             height={160}

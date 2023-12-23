@@ -6,9 +6,14 @@ import {
 } from "~/server/api/trpc";
 import { getSpotifyToken, type SpotifyResponse } from "./utils";
 
-import { Song, playlist as playlistSchema } from "~/server/db/schema";
+import {
+  Song,
+  dailyChallenge,
+  playlist as playlistSchema,
+} from "~/server/db/schema";
 import { eq, sql, ne } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
+import { dailyChallengeType } from "~/trpc/utils";
 
 export const gameRouter = createTRPCRouter({
   createPlaylist: publicProcedure
@@ -199,6 +204,63 @@ export const gameRouter = createTRPCRouter({
 
       return {
         playlistWithSongs,
+      };
+    }),
+
+  getDailyChallenge: publicProcedure.query(async ({ input, ctx }) => {
+    const dbRes = await ctx.db
+      .select()
+      .from(dailyChallenge)
+      .where(eq(dailyChallenge.date, sql`CURRENT_DATE`))
+      .leftJoin(Song, eq(dailyChallenge.songId, Song.id))
+      .limit(1);
+
+    console.log(":YEAH", dbRes);
+
+    const dailyChallengeRes = dbRes[0];
+
+    if (!dailyChallengeRes) {
+      return {
+        dailyChallenge: null,
+      };
+    }
+
+    if (!dailyChallengeRes.Song) {
+      return {
+        dailyChallenge: null,
+      };
+    }
+
+    return {
+      dailyChallenge: {
+        id: dailyChallengeRes.dailyChallenge.id,
+        date: dailyChallengeRes.dailyChallenge.date,
+        song: {
+          id: dailyChallengeRes.Song.id,
+          preview_url: dailyChallengeRes.Song.preview_url,
+          album_name: dailyChallengeRes.Song.album_name,
+          album_image: dailyChallengeRes.Song.album_image,
+          album_release_date: dailyChallengeRes.Song.album_release_date,
+          artist_name: dailyChallengeRes.Song.artist_name,
+        },
+      } as dailyChallengeType,
+    };
+  }),
+
+  createDailyChallenge: publicProcedure
+    .input(z.object({ songId: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const song = await ctx.db
+        .insert(dailyChallenge)
+        .values({
+          createdById: "ADMIN",
+          date: sql`CURRENT_DATE`,
+          songId: input.songId,
+        })
+        .returning();
+
+      return {
+        success: true,
       };
     }),
 });
