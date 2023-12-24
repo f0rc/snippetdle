@@ -1,15 +1,20 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, use } from "react";
+import { set } from "zod";
 import { api } from "~/trpc/react";
 import { dailyChallengeType } from "~/trpc/utils";
 
 const GameMain = () => {
   const gameData = api.game.getDailyChallenge.useQuery();
 
-  const [currentSong] = useState(
+  const [currentSong, setCurrentSong] = useState(
     gameData.data?.dailyChallenge?.song.preview_url,
   );
+
+  useEffect(() => {
+    setCurrentSong(gameData.data?.dailyChallenge?.song.preview_url);
+  }, [gameData.data?.dailyChallenge?.song.preview_url]);
 
   const audioPlayer = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -27,23 +32,6 @@ const GameMain = () => {
 
   const [songStep, setSongStep] = useState(1);
 
-  useEffect(() => {
-    if (audioPlayer.current) {
-      audioPlayer.current.addEventListener("timeupdate", () => {
-        const progressBar = document.getElementById("progressBar");
-        if (progressBar && audioPlayer.current) {
-          const currentProgress =
-            (audioPlayer.current.currentTime / audioPlayer.current.duration) *
-            100;
-
-          const width = Math.floor(currentProgress);
-
-          progressBar.style.width = `${width}%`;
-        }
-      });
-    }
-  }, []);
-
   const handlePlay = async () => {
     if (audioPlayer.current && !isPlaying && songStep < 5) {
       audioPlayer.current.currentTime = 0;
@@ -59,6 +47,7 @@ const GameMain = () => {
       setIsPlaying(false);
       audioPlayer.current.pause();
     } else if (songStep === 5) {
+      setHidden(true);
       // play the rest of the song
       if (audioPlayer.current) {
         await audioPlayer.current.play();
@@ -67,9 +56,36 @@ const GameMain = () => {
     }
   };
 
-  const [cells, setCells] = useState(5);
-
+  // TODO: add logic to unhide the album cover
   const [hidden, setHidden] = useState(false);
+
+  const [time, setTime] = useState({
+    duration: "0:00",
+    currentTime: "0:00",
+    timeLeft: "0:30",
+  });
+
+  function getAudioDuration(audioElement: HTMLAudioElement | null) {
+    if (!audioElement) return;
+
+    const duration = audioElement.duration;
+    const currentTime = audioElement.currentTime;
+    const timeLeft = duration - currentTime;
+
+    const formatTime = (time: number) => {
+      const minutes = Math.floor(time / 60);
+      const seconds = Math.floor(time % 60);
+
+      return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+    };
+
+    setTime({
+      duration: formatTime(duration),
+      currentTime: formatTime(currentTime),
+      timeLeft: formatTime(timeLeft),
+    });
+  }
+
   return (
     <div className="flex w-full max-w-4xl flex-col items-center justify-center pt-4">
       <div className="flex w-full flex-col items-center gap-4 lg:flex-row">
@@ -131,28 +147,44 @@ const GameMain = () => {
           </svg>
         </button>
 
-        <div className="w-1/2 gap-4 ">
+        <div className="w-1/2 gap-4">
           {/* META DATA */}
           <div className="flex flex-col pb-4">
             <p className="text-xl">Song Name</p>
             <p className="text-base">Artist Name</p>
           </div>
           {/* PLAYER */}
-          <div className="rounded-full lg:max-w-sm">
-            <audio ref={audioPlayer} src={currentSong} preload="true" loop />
-
-            {/* two divs with 5 sections, one div is the background and the other is overlay indicating the elapsed time */}
-            <div className="h-2 w-full rounded-full bg-[#16222A]" />
-            <div
-              className="absolute h-2 rounded-full bg-[#E2E941]"
-              id="progressBar"
-              style={{
-                transition: "all 0.05s ease-in-out", // Adding transition inline
-              }}
+          <div className="flex flex-col rounded-full lg:max-w-sm">
+            <audio
+              ref={audioPlayer}
+              src={currentSong}
+              preload="true"
+              loop
+              onTimeUpdate={() => getAudioDuration(audioPlayer.current)}
             />
 
+            {/* two divs with 5 sections, one div is the background and the other is overlay indicating the elapsed time */}
+            {/* <div className="absolute z-0 h-4 w-full max-w-sm rounded-full bg-[#16222A]" />
+            <div
+              className="relative z-10 h-4 w-0 rounded-full bg-[#E2E941]"
+              id="progressBar"
+            /> */}
+
+            <div className="flex w-full">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <button
+                  key={i}
+                  className={`w-1/5 border border-white p-2`}
+                  id={i.toString()}
+                  onClick={() => {
+                    setSongStep(i + 1);
+                  }}
+                />
+              ))}
+            </div>
+
             <div className="flex flex-row justify-between pt-2">
-              <p>0:00</p>
+              <p>{time.currentTime}</p>
               <p>0:30</p>
             </div>
           </div>
