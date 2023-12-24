@@ -9,8 +9,9 @@ const config = {
   images: {
     remotePatterns: [
       {
-        hostname: "https://i.scdn.co",
-        pathname: "/image/*",
+        protocol: "https",
+        hostname: "i.scdn.co",
+        pathname: "/**/*",
       },
     ],
   },

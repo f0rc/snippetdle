@@ -1,24 +1,19 @@
 "use client";
 
-import { useState, useRef, useEffect, use } from "react";
-import { set } from "zod";
+import Image from "next/image";
+import { useState, useRef, useEffect, FormEvent, ChangeEvent } from "react";
 import { api } from "~/trpc/react";
-import { dailyChallengeType } from "~/trpc/utils";
+import type { dailyChallengeType } from "~/trpc/utils";
 
-const GameMain = () => {
-  const gameData = api.game.getDailyChallenge.useQuery();
+type GameMainProps = {
+  options: {
+    dailyChallenge: dailyChallengeType;
+  };
+};
 
-  const [currentSong, setCurrentSong] = useState(
-    gameData.data?.dailyChallenge?.song.preview_url,
-  );
-
-  useEffect(() => {
-    setCurrentSong(gameData.data?.dailyChallenge?.song.preview_url);
-  }, [gameData.data?.dailyChallenge?.song.preview_url]);
-
+const GameMain = (GameMainProps: GameMainProps) => {
   const audioPlayer = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-
   const [volume, setVolume] = useState(30);
 
   useEffect(() => {
@@ -86,6 +81,26 @@ const GameMain = () => {
     });
   }
 
+  // fetch artist data
+  const [inputValue, setInputValue] = useState("");
+  const [debouncedInputValue, setDebouncedInputValue] = useState("");
+
+  const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setInputValue(event.target.value);
+  };
+
+  useEffect(() => {
+    const delayInputTimeoutId = setTimeout(() => {
+      setDebouncedInputValue(inputValue);
+    }, 300);
+    return () => clearTimeout(delayInputTimeoutId);
+  }, [inputValue, 300]);
+
+  const artistSearch = api.game.getArtist.useQuery(
+    { artistName: debouncedInputValue },
+    { enabled: debouncedInputValue !== "" && debouncedInputValue.length >= 2 },
+  );
+
   return (
     <div className="flex w-full max-w-4xl flex-col items-center justify-center pt-4">
       <div className="flex w-full flex-col items-center gap-4 lg:flex-row">
@@ -116,8 +131,8 @@ const GameMain = () => {
               display: hidden ? "none" : "block",
             }}
           />
-          <img
-            src={gameData.data?.dailyChallenge?.song.album_image}
+          <Image
+            src={GameMainProps.options.dailyChallenge.song.album_image}
             alt=""
             width={160}
             height={160}
@@ -157,10 +172,13 @@ const GameMain = () => {
           <div className="flex flex-col rounded-full lg:max-w-sm">
             <audio
               ref={audioPlayer}
-              src={currentSong}
+              src={GameMainProps.options.dailyChallenge.song.preview_url}
               preload="true"
               loop
-              onTimeUpdate={() => getAudioDuration(audioPlayer.current)}
+              onTimeUpdate={(e) => {
+                console.log(e);
+                getAudioDuration(audioPlayer.current);
+              }}
             />
 
             {/* two divs with 5 sections, one div is the background and the other is overlay indicating the elapsed time */}
@@ -195,16 +213,33 @@ const GameMain = () => {
           type="text"
           className="rounded-md bg-stone-100 p-2 text-base text-black lg:text-xl"
           placeholder="Guess the artist"
+          value={inputValue}
+          onChange={handleInputChange}
         />
+        <p>{debouncedInputValue}</p>
         <div className="flex flex-col rounded-md bg-white">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <button
-              key={i}
-              className="rounded-sm border-b border-black bg-stone-100 p-2 text-sm text-black hover:bg-stone-200 lg:text-xl"
-            >
-              Artist
-            </button>
-          ))}
+          {artistSearch.isLoading ? (
+            <div className="rounded-sm border-b border-black bg-stone-100 p-2 text-sm text-black hover:bg-stone-200 lg:text-xl">
+              loading...
+            </div>
+          ) : artistSearch.error ? (
+            <div className="rounded-sm border-b border-black bg-stone-100 p-2 text-sm text-black hover:bg-stone-200 lg:text-xl">
+              error
+            </div>
+          ) : artistSearch.data ? (
+            Array.from({ length: 5 }).map((_, i) => (
+              <button
+                key={i}
+                className="rounded-sm border-b border-black bg-stone-100 p-2 text-sm text-black hover:bg-stone-200 lg:text-xl"
+              >
+                {artistSearch.data.artistName}
+              </button>
+            ))
+          ) : (
+            <div className="rounded-sm border-b border-black bg-stone-100 p-2 text-sm text-black hover:bg-stone-200 lg:text-xl">
+              no results
+            </div>
+          )}
         </div>
       </div>
     </div>

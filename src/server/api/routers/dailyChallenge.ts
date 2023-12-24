@@ -1,9 +1,5 @@
 import { z } from "zod";
-import {
-  createTRPCRouter,
-  protectedProcedure,
-  publicProcedure,
-} from "~/server/api/trpc";
+import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import { getSpotifyToken, type SpotifyResponse } from "./utils";
 
 import {
@@ -11,9 +7,9 @@ import {
   dailyChallenge,
   playlist as playlistSchema,
 } from "~/server/db/schema";
-import { eq, sql, ne } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
-import { dailyChallengeType } from "~/trpc/utils";
+import type { dailyChallengeType } from "~/trpc/utils";
 
 export const gameRouter = createTRPCRouter({
   createPlaylist: publicProcedure
@@ -207,7 +203,7 @@ export const gameRouter = createTRPCRouter({
       };
     }),
 
-  getDailyChallenge: publicProcedure.query(async ({ input, ctx }) => {
+  getDailyChallenge: publicProcedure.query(async ({ ctx }) => {
     const dbRes = await ctx.db
       .select()
       .from(dailyChallenge)
@@ -250,7 +246,7 @@ export const gameRouter = createTRPCRouter({
   createDailyChallenge: publicProcedure
     .input(z.object({ songId: z.string() }))
     .mutation(async ({ input, ctx }) => {
-      const song = await ctx.db
+      await ctx.db
         .insert(dailyChallenge)
         .values({
           createdById: "ADMIN",
@@ -261,6 +257,20 @@ export const gameRouter = createTRPCRouter({
 
       return {
         success: true,
+      };
+    }),
+
+  getArtist: publicProcedure
+    .input(z.object({ artistName: z.string() }))
+    .query(async ({ input, ctx }) => {
+      console.log("fetch artist", input.artistName);
+
+      setTimeout(() => {
+        console.log("fetch artist", input.artistName);
+      }, 4000);
+
+      return {
+        artistName: input.artistName,
       };
     }),
 });
