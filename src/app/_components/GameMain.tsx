@@ -227,14 +227,18 @@ const GameMain = (GameMainProps: GameMainProps) => {
               error
             </div>
           ) : artistSearch.data ? (
-            Array.from({ length: 5 }).map((_, i) => (
-              <button
-                key={i}
-                className="rounded-sm border-b border-black bg-stone-100 p-2 text-sm text-black hover:bg-stone-200 lg:text-xl"
-              >
-                {artistSearch.data.artistName}
-              </button>
-            ))
+            // Array.from({ length: 5 }).map((_, i) => (
+            //   <button
+            //     key={i}
+            //     className="rounded-sm border-b border-black bg-stone-100 p-2 text-sm text-black hover:bg-stone-200 lg:text-xl"
+            //   >
+            //     hello
+            //   </button>
+            // ))
+
+            <pre className="bg-black">
+              {JSON.stringify(artistSearch.data.artistName, null, 2)}
+            </pre>
           ) : (
             <div className="rounded-sm border-b border-black bg-stone-100 p-2 text-sm text-black hover:bg-stone-200 lg:text-xl">
               no results

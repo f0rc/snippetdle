@@ -1,6 +1,6 @@
 export interface dailyChallengeType {
   id: string;
-  date: Date;
+  date: bigint;
   song: {
     id: string;
     preview_url: string;

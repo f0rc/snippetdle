@@ -1,5 +1,12 @@
-import { relations, sql } from "drizzle-orm";
 import {
+  arrayContained,
+  arrayOverlaps,
+  inArray,
+  relations,
+  sql,
+} from "drizzle-orm";
+import {
+  bigint,
   boolean,
   index,
   integer,
@@ -166,7 +173,7 @@ export const dailyChallenge = pgTable("dailyChallenge", {
     .references(() => Song.id, {
       onDelete: "cascade",
     }),
-  date: timestamp("date").notNull(),
+  date: bigint("date", { mode: "bigint" }).notNull(),
 
   createdById: varchar("createdById").notNull(),
   createdAt: timestamp("created_at")
@@ -174,3 +181,29 @@ export const dailyChallenge = pgTable("dailyChallenge", {
     .notNull(),
   updatedAt: timestamp("updatedAt").default(sql`CURRENT_TIMESTAMP`),
 });
+
+export const artistSearchQuery = pgTable(
+  "artistSearchQuery",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    searchParam: varchar("searchParam", { length: 50 }).notNull(),
+  },
+  (t) => ({
+    searchParamIdx: index("searchParamIdx").on(t.searchParam),
+  }),
+);
+
+export const artist = pgTable(
+  "artist",
+  {
+    id: text("id").notNull(),
+    name: varchar("name", { length: 100 }).notNull(),
+    popularity: integer("popularity").default(0),
+    imageUrl: text("imageUrl"),
+    genere: text("genere").array(),
+    queryparam: text("queryparam").array(),
+  },
+  (t) => ({
+    artistIdx: index("artistIdx").on(t.name),
+  }),
+);

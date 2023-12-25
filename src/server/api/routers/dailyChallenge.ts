@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
-import { getSpotifyToken, type SpotifyResponse } from "./utils";
+import { getSpotifyToken, type SpotifyResponse } from "./spotify/utils";
 
 import {
   Song,
@@ -10,6 +10,7 @@ import {
 import { eq, sql } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import type { dailyChallengeType } from "~/trpc/utils";
+import { ArtistAPIType, fakeData } from "./spotify/Artist";
 
 export const gameRouter = createTRPCRouter({
   createPlaylist: publicProcedure
@@ -207,15 +208,19 @@ export const gameRouter = createTRPCRouter({
     const dbRes = await ctx.db
       .select()
       .from(dailyChallenge)
-      .where(eq(dailyChallenge.date, sql`CURRENT_DATE`))
+      .where(
+        eq(
+          dailyChallenge.date,
+          BigInt(new Date().setHours(0, 0, 0, 0).valueOf()),
+        ),
+      )
       .leftJoin(Song, eq(dailyChallenge.songId, Song.id))
       .limit(1);
-
-    console.log(":YEAH", dbRes);
 
     const dailyChallengeRes = dbRes[0];
 
     if (!dailyChallengeRes) {
+      console.log("res not available");
       return {
         dailyChallenge: null,
       };
@@ -244,13 +249,15 @@ export const gameRouter = createTRPCRouter({
   }),
 
   createDailyChallenge: publicProcedure
-    .input(z.object({ songId: z.string() }))
+    .input(z.object({ songId: z.string(), forDate: z.date() }))
     .mutation(async ({ input, ctx }) => {
+      console.log("INPUT DATE", input.forDate);
+
       await ctx.db
         .insert(dailyChallenge)
         .values({
           createdById: "ADMIN",
-          date: sql`CURRENT_DATE`,
+          date: BigInt(input.forDate.valueOf()),
           songId: input.songId,
         })
         .returning();
@@ -263,14 +270,30 @@ export const gameRouter = createTRPCRouter({
   getArtist: publicProcedure
     .input(z.object({ artistName: z.string() }))
     .query(async ({ input, ctx }) => {
-      console.log("fetch artist", input.artistName);
+      const token = await getSpotifyToken({ db: ctx.db });
 
-      setTimeout(() => {
-        console.log("fetch artist", input.artistName);
-      }, 4000);
+      if (!token) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Spotify Error",
+        });
+      }
+
+      const res = await searchArtist(input.artistName, token);
+
+      const artistResult = res.artists.items.map((artist) => {
+        const imageUrl = artist.images.length > 0 ? artist.images[0]?.url : "";
+        return {
+          name: artist.name,
+          id: artist.id,
+          popularity: artist.popularity,
+          imageUrl: imageUrl,
+          genres: artist.genres,
+        };
+      });
 
       return {
-        artistName: input.artistName,
+        artistName: artistResult,
       };
     }),
 });
@@ -279,4 +302,22 @@ function getPlaylistIdFromUrl(url: string) {
   const urlParts = url.split("/");
   const id = urlParts[urlParts.length - 1]?.split("?")[0];
   return id;
+}
+
+async function searchArtist(artistInput: string, apiToken: string) {
+  const url = new URL(`https://api.spotify.com/v1/search`);
+
+  url.searchParams.append("q", artistInput);
+
+  url.searchParams.append("type", "artist");
+
+  // const artistSearchResponse = await fetch(url, {
+  //   headers: {
+  //     Authorization: "Bearer " + apiToken,
+  //   },
+  // }).then((res) => res.json() as Promise<ArtistAPIType>);
+
+  const artistSearchResponse = fakeData;
+
+  return artistSearchResponse;
 }
