@@ -5,8 +5,6 @@ import { api } from "~/trpc/react";
 
 function page() {
   const [songId, setSongId] = useState("");
-  const date = new Date();
-  console.log(date);
   const [forDate, setForDate] = useState<Date>();
 
   const submitMutation = api.game.createDailyChallenge.useMutation({
@@ -23,17 +21,20 @@ function page() {
         value={songId}
         onChange={(e) => setSongId(e.target.value)}
       />
-
       <input
         type="date"
         className="text-black"
         onChange={(e) => {
-          e.target.valueAsDate && setForDate(e.target.valueAsDate);
-          console.log("HERE", e.target.valueAsDate);
+          if (e.target.valueAsDate) {
+            const selectedDate = e.target.valueAsDate;
+            const offsetInMs = selectedDate.getTimezoneOffset() * 60 * 1000; // Offset in milliseconds
+            const utcDate = new Date(selectedDate.getTime() + offsetInMs);
+            setForDate(utcDate);
+          }
         }}
       />
 
-      <p>{}</p>
+      <p>{forDate?.toISOString()}</p>
       <button
         onClick={async () => {
           if (!forDate) {

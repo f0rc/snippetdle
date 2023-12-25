@@ -173,7 +173,7 @@ export const dailyChallenge = pgTable("dailyChallenge", {
     .references(() => Song.id, {
       onDelete: "cascade",
     }),
-  date: bigint("date", { mode: "bigint" }).notNull(),
+  date: timestamp("date", { mode: "string" }).notNull(),
 
   createdById: varchar("createdById").notNull(),
   createdAt: timestamp("created_at")

@@ -208,12 +208,7 @@ export const gameRouter = createTRPCRouter({
     const dbRes = await ctx.db
       .select()
       .from(dailyChallenge)
-      .where(
-        eq(
-          dailyChallenge.date,
-          BigInt(new Date().setHours(0, 0, 0, 0).valueOf()),
-        ),
-      )
+      .where(eq(dailyChallenge.date, sql`CURRENT_DATE`))
       .leftJoin(Song, eq(dailyChallenge.songId, Song.id))
       .limit(1);
 
@@ -251,13 +246,20 @@ export const gameRouter = createTRPCRouter({
   createDailyChallenge: publicProcedure
     .input(z.object({ songId: z.string(), forDate: z.date() }))
     .mutation(async ({ input, ctx }) => {
-      console.log("INPUT DATE", input.forDate);
+      const dateOnly = input.forDate.toISOString().split("T")[0];
+
+      if (!dateOnly) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Invalid date",
+        });
+      }
 
       await ctx.db
         .insert(dailyChallenge)
         .values({
           createdById: "ADMIN",
-          date: BigInt(input.forDate.valueOf()),
+          date: dateOnly,
           songId: input.songId,
         })
         .returning();
