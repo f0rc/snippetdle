@@ -17,6 +17,7 @@ import {
   text,
   timestamp,
   uuid,
+  date,
   varchar,
 } from "drizzle-orm/pg-core";
 import { type AdapterAccount } from "next-auth/adapters";
@@ -173,7 +174,7 @@ export const dailyChallenge = pgTable("dailyChallenge", {
     .references(() => Song.id, {
       onDelete: "cascade",
     }),
-  date: timestamp("date", { mode: "string" }).notNull(),
+  date: date("date", { mode: "string" }).notNull(),
 
   createdById: varchar("createdById").notNull(),
   createdAt: timestamp("created_at")

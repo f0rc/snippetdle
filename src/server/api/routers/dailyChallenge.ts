@@ -205,10 +205,13 @@ export const gameRouter = createTRPCRouter({
     }),
 
   getDailyChallenge: publicProcedure.query(async ({ ctx }) => {
+    // TODO TEST IF THIS ACTUALLY WORKS
+    const date = new Date().toLocaleDateString("en-US");
+
     const dbRes = await ctx.db
       .select()
       .from(dailyChallenge)
-      .where(eq(dailyChallenge.date, sql`CURRENT_DATE`))
+      .where(eq(sql`DATE(${dailyChallenge.date})`, date))
       .leftJoin(Song, eq(dailyChallenge.songId, Song.id))
       .limit(1);
 
@@ -272,6 +275,8 @@ export const gameRouter = createTRPCRouter({
   getArtist: publicProcedure
     .input(z.object({ artistName: z.string() }))
     .query(async ({ input, ctx }) => {
+      // search db with query and if result > 5 then return result else search spotify cahche and return result
+
       const token = await getSpotifyToken({ db: ctx.db });
 
       if (!token) {
@@ -295,7 +300,7 @@ export const gameRouter = createTRPCRouter({
       });
 
       return {
-        artistName: artistResult,
+        artistResult: artistResult,
       };
     }),
 });

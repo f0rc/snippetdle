@@ -18,35 +18,42 @@ const GameMain = (GameMainProps: GameMainProps) => {
 
   useEffect(() => {
     if (audioPlayer.current) {
-      console.log("volume", volume);
       audioPlayer.current.volume = volume / 100;
 
       setVolume(volume);
     }
   }, [volume]);
 
-  const [songStep, setSongStep] = useState(1);
+  const [songStep, setSongStep] = useState(0);
+
+  const playIntervals = [1000, 2000, 3000, 5000, 7000, 10000];
+
+  const playAudio = async (index: number) => {
+    if (index >= playIntervals.length || !audioPlayer.current) {
+      setIsPlaying(false);
+      return;
+    }
+
+    const interval = playIntervals[index];
+    console.log("interval", interval);
+    audioPlayer.current.currentTime = 0;
+
+    const playPromise = audioPlayer.current.play();
+    const waitPromise = new Promise((resolve) => setTimeout(resolve, interval));
+    setIsPlaying(true);
+
+    await Promise.all([playPromise, waitPromise]);
+
+    audioPlayer.current.pause();
+    setIsPlaying(false);
+  };
 
   const handlePlay = async () => {
-    if (audioPlayer.current && !isPlaying && songStep < 5) {
-      audioPlayer.current.currentTime = 0;
-
-      while (audioPlayer.current.currentTime <= songStep) {
-        setIsPlaying(true);
-        await audioPlayer.current.play();
-      }
-      audioPlayer.current.pause();
+    if (!isPlaying && songStep < playIntervals.length) {
+      await playAudio(songStep);
+    } else if (isPlaying) {
       setIsPlaying(false);
-    } else if (audioPlayer.current && isPlaying) {
-      setIsPlaying(false);
-      audioPlayer.current.pause();
-    } else if (songStep === 5) {
-      setHidden(true);
-      // play the rest of the song
-      if (audioPlayer.current) {
-        await audioPlayer.current.play();
-        setIsPlaying(true);
-      }
+      audioPlayer.current?.pause();
     }
   };
 
@@ -58,27 +65,6 @@ const GameMain = (GameMainProps: GameMainProps) => {
     currentTime: "0:00",
     timeLeft: "0:30",
   });
-
-  function getAudioDuration(audioElement: HTMLAudioElement | null) {
-    if (!audioElement) return;
-
-    const duration = audioElement.duration;
-    const currentTime = audioElement.currentTime;
-    const timeLeft = duration - currentTime;
-
-    const formatTime = (time: number) => {
-      const minutes = Math.floor(time / 60);
-      const seconds = Math.floor(time % 60);
-
-      return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
-    };
-
-    setTime({
-      duration: formatTime(duration),
-      currentTime: formatTime(currentTime),
-      timeLeft: formatTime(timeLeft),
-    });
-  }
 
   // fetch artist data
   const [inputValue, setInputValue] = useState("");
@@ -159,7 +145,6 @@ const GameMain = (GameMainProps: GameMainProps) => {
         <button
           className="hidden rounded-full bg-yellow-400 p-4 lg:flex"
           onClick={handlePlay}
-          disabled={isPlaying && songStep < 5}
         >
           {isPlaying ? (
             <svg
@@ -194,22 +179,24 @@ const GameMain = (GameMainProps: GameMainProps) => {
           )}
         </button>
 
-        <div className="w-1/2 gap-4">
+        <div className="w-4/5 gap-4">
           {/* META DATA */}
-          <div className="flex flex-col pb-4">
+          {/* <div className="flex flex-col pb-4">
             <p className="text-xl">Song Name</p>
             <p className="text-base">Artist Name</p>
-          </div>
+            <p>{songStep}</p>
+          </div> */}
           {/* PLAYER */}
-          <div className="flex flex-col rounded-full lg:max-w-sm">
+          <div className="flex w-full flex-col rounded-full lg:max-w-sm">
             <audio
               ref={audioPlayer}
               src={GameMainProps.options.dailyChallenge.song.preview_url}
               preload="true"
               loop
               onTimeUpdate={(e) => {
-                console.log(e);
-                getAudioDuration(audioPlayer.current);
+                if (audioPlayer.current) {
+                  setTime(getAudioDuration(audioPlayer.current));
+                }
               }}
             />
 
@@ -240,17 +227,22 @@ const GameMain = (GameMainProps: GameMainProps) => {
           </div>
         </div>
       </div>
-      <div className="flex flex-col gap-2 pt-4">
-        <input
-          type="text"
-          className="rounded-md bg-stone-100 p-2 text-base text-black lg:text-xl"
-          placeholder="Guess the artist"
-          value={inputValue}
-          onChange={handleInputChange}
-        />
-        <p>{debouncedInputValue}</p>
-        <div className="flex flex-col rounded-md bg-white">
-          {artistSearch.isLoading ? (
+      <div className="flex w-full flex-col items-center gap-2 pt-4">
+        <div className="flex w-4/5 flex-row justify-center gap-2 lg:w-1/2">
+          <input
+            type="text"
+            className=" w-full rounded-md bg-stone-100 p-2 text-base  text-black lg:text-xl"
+            placeholder="Guess the artist"
+            value={inputValue}
+            onChange={handleInputChange}
+          />
+          <div className="flex flex-row gap-2">
+            <button className="rounded-lg bg-blue-600 px-4 py-2">{"->"}</button>
+            <button className="rounded-lg bg-blue-600 px-2">Skip</button>
+          </div>
+        </div>
+        <div className="flex w-4/5 flex-col rounded-md bg-white lg:w-1/2">
+          {artistSearch.isLoading && artistSearch.fetchStatus !== "idle" ? (
             <div className="rounded-sm border-b border-black bg-stone-100 p-2 text-sm text-black hover:bg-stone-200 lg:text-xl">
               loading...
             </div>
@@ -259,22 +251,16 @@ const GameMain = (GameMainProps: GameMainProps) => {
               error
             </div>
           ) : artistSearch.data ? (
-            // Array.from({ length: 5 }).map((_, i) => (
-            //   <button
-            //     key={i}
-            //     className="rounded-sm border-b border-black bg-stone-100 p-2 text-sm text-black hover:bg-stone-200 lg:text-xl"
-            //   >
-            //     hello
-            //   </button>
-            // ))
-
-            <pre className="bg-black">
-              {JSON.stringify(artistSearch.data.artistName, null, 2)}
-            </pre>
+            artistSearch.data.artistResult.map((artist) => (
+              <button
+                key={artist.id}
+                className="rounded-sm border-b border-black bg-stone-100 p-2 text-sm text-black hover:bg-stone-200 lg:text-xl"
+              >
+                {artist.name}
+              </button>
+            ))
           ) : (
-            <div className="rounded-sm border-b border-black bg-stone-100 p-2 text-sm text-black hover:bg-stone-200 lg:text-xl">
-              no results
-            </div>
+            <div></div>
           )}
         </div>
       </div>
@@ -283,3 +269,22 @@ const GameMain = (GameMainProps: GameMainProps) => {
 };
 
 export default GameMain;
+
+function getAudioDuration(audioElement: HTMLAudioElement) {
+  const duration = audioElement.duration;
+  const currentTime = audioElement.currentTime;
+  const timeLeft = duration - currentTime;
+
+  const formatTime = (time: number) => {
+    const minutes = Math.round(time / 60);
+    const seconds = Math.round(time % 60);
+
+    return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+  };
+
+  return {
+    duration: formatTime(duration),
+    currentTime: formatTime(currentTime),
+    timeLeft: formatTime(timeLeft),
+  };
+}
