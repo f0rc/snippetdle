@@ -186,8 +186,7 @@ export const dailyChallenge = pgTable("dailyChallenge", {
 export const artistSearchQuery = pgTable(
   "artistSearchQuery",
   {
-    id: uuid("id").primaryKey().defaultRandom(),
-    searchParam: varchar("searchParam", { length: 50 }).notNull(),
+    searchParam: varchar("searchParam", { length: 50 }).primaryKey(),
   },
   (t) => ({
     searchParamIdx: index("searchParamIdx").on(t.searchParam),
@@ -197,9 +196,9 @@ export const artistSearchQuery = pgTable(
 export const artist = pgTable(
   "artist",
   {
-    id: text("id").notNull(),
+    id: text("id").primaryKey(),
     name: varchar("name", { length: 100 }).notNull(),
-    popularity: integer("popularity").default(0),
+    popularity: integer("popularity").notNull().default(0),
     imageUrl: text("imageUrl"),
     genere: text("genere").array(),
     queryparam: text("queryparam").array(),

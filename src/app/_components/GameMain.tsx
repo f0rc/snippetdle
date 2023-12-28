@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useRef, useEffect, FormEvent, ChangeEvent } from "react";
+import { useState, useRef, useEffect, type ChangeEvent } from "react";
 import { api } from "~/trpc/react";
 import type { dailyChallengeType } from "~/trpc/utils";
 
@@ -28,6 +28,46 @@ const GameMain = (GameMainProps: GameMainProps) => {
 
   const playIntervals = [1000, 2000, 3000, 5000, 7000, 10000];
 
+  const [gameOver, setGameOver] = useState(false);
+
+  interface roundInfoType {
+    songStep: number;
+    artistName: string;
+    correct: boolean;
+  }
+  const [roundInfo, setRoundInfo] = useState<roundInfoType[]>([]);
+
+  console.log(GameMainProps.options.dailyChallenge.song.artist_name);
+
+  const handleRoundSubmit = (skip: boolean) => {
+    const newRoundInfo = {
+      songStep: songStep,
+      artistName: selectAnswer,
+      correct:
+        selectAnswer === GameMainProps.options.dailyChallenge.song.artist_name,
+      skip: skip,
+    };
+
+    if (roundInfo.length <= 5 && !gameOver) {
+      const updatedRouned = [...roundInfo];
+      updatedRouned.push(newRoundInfo);
+      setRoundInfo(updatedRouned);
+      // check if won else move to next round
+      if (newRoundInfo.correct) {
+        setGameOver(true);
+      } else {
+        setSongStep((prev) => prev + 1);
+      }
+
+      setInputValue("");
+      setSelectAnswer("");
+    } else {
+      setGameOver(true);
+    }
+  };
+
+  const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
+
   const playAudio = async (index: number) => {
     if (index >= playIntervals.length || !audioPlayer.current) {
       setIsPlaying(false);
@@ -39,21 +79,41 @@ const GameMain = (GameMainProps: GameMainProps) => {
     audioPlayer.current.currentTime = 0;
 
     const playPromise = audioPlayer.current.play();
-    const waitPromise = new Promise((resolve) => setTimeout(resolve, interval));
+    const waitPromise = new Promise((resolve) => {
+      setTimeoutId(
+        setTimeout(() => {
+          resolve(console.log("timeout is complete"));
+        }, interval),
+      );
+    });
+
     setIsPlaying(true);
 
     await Promise.all([playPromise, waitPromise]);
-
     audioPlayer.current.pause();
     setIsPlaying(false);
+    timeoutId && clearTimeout(timeoutId);
   };
 
   const handlePlay = async () => {
-    if (!isPlaying && songStep < playIntervals.length) {
-      await playAudio(songStep);
+    if (!isPlaying && songStep < playIntervals.length && !gameOver) {
+      if (songStep <= 5) {
+        await playAudio(songStep);
+      }
     } else if (isPlaying) {
-      setIsPlaying(false);
-      audioPlayer.current?.pause();
+      if (audioPlayer.current) {
+        setIsPlaying(false);
+        audioPlayer.current.pause();
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+          console.log("timeout cleared");
+          setTimeoutId(null);
+        }
+      }
+    } else {
+      // Play the song normally without intervals if step > 5
+      audioPlayer.current && (await audioPlayer.current.play());
+      setIsPlaying(true);
     }
   };
 
@@ -70,31 +130,37 @@ const GameMain = (GameMainProps: GameMainProps) => {
   const [inputValue, setInputValue] = useState("");
   const [debouncedInputValue, setDebouncedInputValue] = useState("");
 
+  const [selectAnswer, setSelectAnswer] = useState("");
+
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     setInputValue(event.target.value);
   };
 
   useEffect(() => {
     const delayInputTimeoutId = setTimeout(() => {
-      setDebouncedInputValue(inputValue);
-    }, 300);
+      if (inputValue !== selectAnswer) {
+        setDebouncedInputValue(inputValue);
+      }
+    }, 1000);
+
     return () => clearTimeout(delayInputTimeoutId);
-  }, [inputValue, 300]);
+  }, [inputValue, 1000]);
 
   const artistSearch = api.game.getArtist.useQuery(
     { artistName: debouncedInputValue },
-    { enabled: debouncedInputValue !== "" && debouncedInputValue.length >= 2 },
+    {
+      enabled:
+        debouncedInputValue.length > 2 &&
+        selectAnswer !== debouncedInputValue &&
+        !gameOver,
+    },
   );
 
   return (
     <div className="flex w-full max-w-4xl flex-col items-center justify-center pt-4">
       <div className="flex w-full flex-col items-center gap-4 lg:flex-row">
         <div className="flex flex-col items-center justify-center">
-          <button
-            className="absolute z-10 lg:hidden"
-            onClick={handlePlay}
-            disabled={isPlaying && songStep < 5}
-          >
+          <button className="absolute z-10 lg:hidden" onClick={handlePlay}>
             {isPlaying ? (
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -208,13 +274,13 @@ const GameMain = (GameMainProps: GameMainProps) => {
             /> */}
 
             <div className="flex w-full">
-              {Array.from({ length: 5 }).map((_, i) => (
+              {Array.from({ length: playIntervals.length }).map((_, i) => (
                 <button
                   key={i}
                   className={`w-1/5 border border-white p-2`}
                   id={i.toString()}
                   onClick={() => {
-                    setSongStep(i + 1);
+                    setSongStep(i);
                   }}
                 />
               ))}
@@ -224,6 +290,8 @@ const GameMain = (GameMainProps: GameMainProps) => {
               <p>{time.currentTime}</p>
               <p>0:30</p>
             </div>
+
+            <p>{songStep}</p>
           </div>
         </div>
       </div>
@@ -237,8 +305,22 @@ const GameMain = (GameMainProps: GameMainProps) => {
             onChange={handleInputChange}
           />
           <div className="flex flex-row gap-2">
-            <button className="rounded-lg bg-blue-600 px-4 py-2">{"->"}</button>
-            <button className="rounded-lg bg-blue-600 px-2">Skip</button>
+            <button
+              className="rounded-lg bg-blue-600 px-4 py-2"
+              onClick={() => {
+                selectAnswer && handleRoundSubmit(false);
+              }}
+            >
+              {"->"}
+            </button>
+            <button
+              className="rounded-lg bg-blue-600 px-2"
+              onClick={() => {
+                handleRoundSubmit(true);
+              }}
+            >
+              Skip
+            </button>
           </div>
         </div>
         <div className="flex w-4/5 flex-col rounded-md bg-white lg:w-1/2">
@@ -250,11 +332,15 @@ const GameMain = (GameMainProps: GameMainProps) => {
             <div className="rounded-sm border-b border-black bg-stone-100 p-2 text-sm text-black hover:bg-stone-200 lg:text-xl">
               error
             </div>
-          ) : artistSearch.data ? (
+          ) : artistSearch.data && inputValue ? (
             artistSearch.data.artistResult.map((artist) => (
               <button
                 key={artist.id}
-                className="rounded-sm border-b border-black bg-stone-100 p-2 text-sm text-black hover:bg-stone-200 lg:text-xl"
+                onClick={() => {
+                  setSelectAnswer(artist.name);
+                  setInputValue(artist.name);
+                }}
+                className="rounded-sm border-b border-black bg-stone-100 p-2 text-sm text-black hover:bg-stone-200 focus:ring-1 focus:ring-blue-500 lg:text-xl"
               >
                 {artist.name}
               </button>

@@ -4,13 +4,16 @@ import { getSpotifyToken, type SpotifyResponse } from "./spotify/utils";
 
 import {
   Song,
+  artist,
+  artistSearchQuery,
   dailyChallenge,
   playlist as playlistSchema,
 } from "~/server/db/schema";
-import { eq, sql } from "drizzle-orm";
+import { eq, ilike, like, or, sql } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import type { dailyChallengeType } from "~/trpc/utils";
 import { ArtistAPIType, fakeData } from "./spotify/Artist";
+import { dbType } from "~/server/db";
 
 export const gameRouter = createTRPCRouter({
   createPlaylist: publicProcedure
@@ -275,8 +278,6 @@ export const gameRouter = createTRPCRouter({
   getArtist: publicProcedure
     .input(z.object({ artistName: z.string() }))
     .query(async ({ input, ctx }) => {
-      // search db with query and if result > 5 then return result else search spotify cahche and return result
-
       const token = await getSpotifyToken({ db: ctx.db });
 
       if (!token) {
@@ -286,22 +287,76 @@ export const gameRouter = createTRPCRouter({
         });
       }
 
-      const res = await searchArtist(input.artistName, token);
+      // insert into db
+      await ctx.db
+        .insert(artistSearchQuery)
+        .values({
+          searchParam: input.artistName.toLowerCase(),
+        })
+        .onConflictDoNothing({ target: artistSearchQuery.searchParam });
 
-      const artistResult = res.artists.items.map((artist) => {
-        const imageUrl = artist.images.length > 0 ? artist.images[0]?.url : "";
+      const getArtistFromDb = await ctx.db
+        .select()
+        .from(artist)
+        .where(
+          or(
+            eq(
+              sql.raw(`'${input.artistName.toLowerCase()}'`),
+              sql`ANY(${artist.queryparam})`,
+            ),
+            ilike(artist.name, `%${input.artistName.toLowerCase()}%`),
+          ),
+        );
+
+      console.log(getArtistFromDb);
+
+      if (getArtistFromDb.length < 5) {
+        console.log("==============================searching spotify");
+        const res = await searchArtist(input.artistName, token);
+
+        const artistResult = res.artists.items.map((artist) => {
+          const imageUrl =
+            artist.images.length > 0 ? artist.images[0]?.url : "";
+          return {
+            name: artist.name,
+            id: artist.id,
+            popularity: artist.popularity,
+            imageUrl: imageUrl,
+            genres: artist.genres,
+            queryparam: [input.artistName.toLowerCase()],
+          };
+        });
+
+        await ctx.db
+          .insert(artist)
+          .values(artistResult)
+          .onConflictDoUpdate({
+            target: artist.id,
+            set: {
+              queryparam: sql.raw(
+                `ARRAY(SELECT DISTINCT UNNEST(ARRAY_APPEND(COALESCE("artist"."queryparam", '{}'), '${input.artistName.toLowerCase()}')))`,
+              ),
+            },
+          })
+          .returning();
+
+        const newList = artistResult.sort((a, b) => {
+          return b.popularity - a.popularity;
+        });
+
         return {
-          name: artist.name,
-          id: artist.id,
-          popularity: artist.popularity,
-          imageUrl: imageUrl,
-          genres: artist.genres,
+          artistResult: newList.slice(0, 5),
         };
-      });
+      } else {
+        // sort by popularity
+        const newList = getArtistFromDb.sort((a, b) => {
+          return b.popularity - a.popularity;
+        });
 
-      return {
-        artistResult: artistResult,
-      };
+        return {
+          artistResult: newList.slice(0, 5),
+        };
+      }
     }),
 });
 
@@ -318,13 +373,13 @@ async function searchArtist(artistInput: string, apiToken: string) {
 
   url.searchParams.append("type", "artist");
 
-  // const artistSearchResponse = await fetch(url, {
-  //   headers: {
-  //     Authorization: "Bearer " + apiToken,
-  //   },
-  // }).then((res) => res.json() as Promise<ArtistAPIType>);
+  const artistSearchResponse = await fetch(url, {
+    headers: {
+      Authorization: "Bearer " + apiToken,
+    },
+  }).then((res) => res.json() as Promise<ArtistAPIType>);
 
-  const artistSearchResponse = fakeData;
+  // const artistSearchResponse = fakeData;
 
   return artistSearchResponse;
 }
