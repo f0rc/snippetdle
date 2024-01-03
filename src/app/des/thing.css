@@ -1,0 +1,15 @@
+@keyframes custom-spin-custom-speed {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-custom-spin-custom-speed {
+  animation-name: custom-spin-custom-speed;
+  animation-duration: 2s; /* Adjust the duration to control the speed */
+  animation-iteration-count: infinite;
+  animation-timing-function: linear; /* Optional: Set the timing function */
+}

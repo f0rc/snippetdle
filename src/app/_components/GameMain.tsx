@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useRef, useEffect, type ChangeEvent } from "react";
+import { useState, useRef, useEffect, type ChangeEvent, use } from "react";
 import { api } from "~/trpc/react";
 import type { dailyChallengeType } from "~/trpc/utils";
 
@@ -34,10 +34,9 @@ const GameMain = (GameMainProps: GameMainProps) => {
     songStep: number;
     artistName: string;
     correct: boolean;
+    skip: boolean;
   }
   const [roundInfo, setRoundInfo] = useState<roundInfoType[]>([]);
-
-  console.log(GameMainProps.options.dailyChallenge.song.artist_name);
 
   const handleRoundSubmit = (skip: boolean) => {
     const newRoundInfo = {
@@ -158,7 +157,7 @@ const GameMain = (GameMainProps: GameMainProps) => {
 
   return (
     <div className="flex w-full max-w-4xl flex-col items-center justify-center pt-4">
-      <div className="flex w-full flex-col items-center gap-4 lg:flex-row">
+      <div className="flex w-full flex-col items-center justify-center gap-4 lg:flex-row">
         <div className="flex flex-col items-center justify-center">
           <button className="absolute z-10 lg:hidden" onClick={handlePlay}>
             {isPlaying ? (
@@ -194,22 +193,22 @@ const GameMain = (GameMainProps: GameMainProps) => {
             )}
           </button>
           <div
-            className="absolute h-40 w-40 rounded-md bg-black"
+            className="absolute h-32 w-32 rounded-md bg-black lg:h-40 lg:w-40"
             style={{
-              display: hidden ? "none" : "block",
+              display: gameOver ? "none" : "block",
             }}
           />
           <Image
             src={GameMainProps.options.dailyChallenge.song.album_image}
             alt=""
-            width={160}
-            height={160}
-            className="h-40 w-40 rounded-md border-none bg-black"
+            width={80}
+            height={80}
+            className="h-32 w-32 rounded-md border-none bg-black lg:h-40 lg:w-40"
           />
         </div>
         {/* Play button only for lg+ */}
         <button
-          className="hidden rounded-full bg-yellow-400 p-4 lg:flex"
+          className="hidden self-center rounded-full bg-yellow-400 p-4 lg:flex"
           onClick={handlePlay}
         >
           {isPlaying ? (
@@ -278,10 +277,7 @@ const GameMain = (GameMainProps: GameMainProps) => {
                 <button
                   key={i}
                   className={`w-1/5 border border-white p-2`}
-                  id={i.toString()}
-                  onClick={() => {
-                    setSongStep(i);
-                  }}
+                  id={i.toString() + "round"}
                 />
               ))}
             </div>
@@ -290,12 +286,32 @@ const GameMain = (GameMainProps: GameMainProps) => {
               <p>{time.currentTime}</p>
               <p>0:30</p>
             </div>
-
-            <p>{songStep}</p>
           </div>
         </div>
       </div>
       <div className="flex w-full flex-col items-center gap-2 pt-4">
+        {/* ROUND INFO */}
+        <div className="hidden w-4/5 flex-col gap-1 rounded-md bg-none lg:flex lg:w-1/2">
+          {roundInfo.map((round) => (
+            <div
+              key={round.songStep}
+              className={`flex flex-row justify-between rounded-lg p-2 text-sm text-black ${
+                round.skip
+                  ? "bg-gray-400"
+                  : round.correct
+                    ? "bg-green-200"
+                    : "bg-red-200"
+              }`}
+            >
+              <p>
+                {round.songStep + 1}.{" "}
+                {round.skip ? "Skipped" : round.artistName}
+              </p>
+              <p>{round.correct ? "Correct" : "Wrong"}</p>
+            </div>
+          ))}
+        </div>
+        {/* INPUT */}
         <div className="flex w-4/5 flex-row justify-center gap-2 lg:w-1/2">
           <input
             type="text"
@@ -323,6 +339,7 @@ const GameMain = (GameMainProps: GameMainProps) => {
             </button>
           </div>
         </div>
+        {/* Search results */}
         <div className="flex w-4/5 flex-col rounded-md bg-white lg:w-1/2">
           {artistSearch.isLoading && artistSearch.fetchStatus !== "idle" ? (
             <div className="rounded-sm border-b border-black bg-stone-100 p-2 text-sm text-black hover:bg-stone-200 lg:text-xl">

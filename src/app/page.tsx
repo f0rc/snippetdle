@@ -13,7 +13,7 @@ export default async function Home() {
           <GameMain options={{ dailyChallenge: data.dailyChallenge }} />
         )}
       </div>
-      <div className="hidden h-full w-1/4 lg:flex">quick playlist</div>
+      {/* <div className="hidden h-full w-1/4 lg:flex">quick playlist</div> */}
     </main>
   );
 }
