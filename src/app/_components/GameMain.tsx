@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useState, useRef, useEffect, type ChangeEvent, use } from "react";
 import { api } from "~/trpc/react";
 import type { dailyChallengeType } from "~/trpc/utils";
+import CassettePlayer from "./CassettePlayer";
 
 type GameMainProps = {
   options: {
@@ -155,137 +156,67 @@ const GameMain = (GameMainProps: GameMainProps) => {
     },
   );
 
+  const [rotation, setRotation] = useState(0);
+
+  useEffect(() => {
+    if (isPlaying) {
+      if (false) {
+        const interval = setInterval(() => {
+          setRotation((r) => r - 1);
+        }, 10);
+        return () => clearInterval(interval);
+      } else {
+        const interval = setInterval(() => {
+          setRotation((r) => r + 1);
+        }, 10);
+        return () => clearInterval(interval);
+      }
+    }
+  }, [isPlaying]);
+
   return (
     <div className="flex w-full max-w-4xl flex-col items-center justify-center pt-4">
-      <div className="flex w-full flex-col items-center justify-center gap-4 lg:flex-row">
-        <div className="flex flex-col items-center justify-center">
-          <button className="absolute z-10 lg:hidden" onClick={handlePlay}>
-            {isPlaying ? (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="h-6 w-6"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M5.25 7.5A2.25 2.25 0 0 1 7.5 5.25h9a2.25 2.25 0 0 1 2.25 2.25v9a2.25 2.25 0 0 1-2.25 2.25h-9a2.25 2.25 0 0 1-2.25-2.25v-9Z"
-                />
-              </svg>
-            ) : (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="h-6 w-6"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z"
-                />
-              </svg>
-            )}
-          </button>
-          <div
-            className="absolute h-32 w-32 rounded-md bg-black lg:h-40 lg:w-40"
-            style={{
-              display: gameOver ? "none" : "block",
+      <div className="flex w-full flex-col items-center justify-center gap-4">
+        <CassettePlayer
+          roationAngle={rotation}
+          isPlaying={isPlaying}
+          handlePlay={handlePlay}
+        />
+
+        {/* PLAYER */}
+        <div className="flex w-full flex-col rounded-full lg:max-w-sm">
+          <audio
+            ref={audioPlayer}
+            src={GameMainProps.options.dailyChallenge.song.preview_url}
+            preload="true"
+            loop
+            onTimeUpdate={(e) => {
+              if (audioPlayer.current) {
+                setTime(getAudioDuration(audioPlayer.current));
+              }
             }}
           />
-          <Image
-            src={GameMainProps.options.dailyChallenge.song.album_image}
-            alt=""
-            width={80}
-            height={80}
-            className="h-32 w-32 rounded-md border-none bg-black lg:h-40 lg:w-40"
-          />
-        </div>
-        {/* Play button only for lg+ */}
-        <button
-          className="hidden self-center rounded-full bg-yellow-400 p-4 lg:flex"
-          onClick={handlePlay}
-        >
-          {isPlaying ? (
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="h-6 w-6"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M5.25 7.5A2.25 2.25 0 0 1 7.5 5.25h9a2.25 2.25 0 0 1 2.25 2.25v9a2.25 2.25 0 0 1-2.25 2.25h-9a2.25 2.25 0 0 1-2.25-2.25v-9Z"
-              />
-            </svg>
-          ) : (
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="h-6 w-6"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z"
-              />
-            </svg>
-          )}
-        </button>
 
-        <div className="w-4/5 gap-4">
-          {/* META DATA */}
-          {/* <div className="flex flex-col pb-4">
-            <p className="text-xl">Song Name</p>
-            <p className="text-base">Artist Name</p>
-            <p>{songStep}</p>
-          </div> */}
-          {/* PLAYER */}
-          <div className="flex w-full flex-col rounded-full lg:max-w-sm">
-            <audio
-              ref={audioPlayer}
-              src={GameMainProps.options.dailyChallenge.song.preview_url}
-              preload="true"
-              loop
-              onTimeUpdate={(e) => {
-                if (audioPlayer.current) {
-                  setTime(getAudioDuration(audioPlayer.current));
-                }
-              }}
-            />
-
-            {/* two divs with 5 sections, one div is the background and the other is overlay indicating the elapsed time */}
-            {/* <div className="absolute z-0 h-4 w-full max-w-sm rounded-full bg-[#16222A]" />
+          {/* two divs with 5 sections, one div is the background and the other is overlay indicating the elapsed time */}
+          {/* <div className="absolute z-0 h-4 w-full max-w-sm rounded-full bg-[#16222A]" />
             <div
               className="relative z-10 h-4 w-0 rounded-full bg-[#E2E941]"
               id="progressBar"
             /> */}
 
-            <div className="flex w-full">
-              {Array.from({ length: playIntervals.length }).map((_, i) => (
-                <button
-                  key={i}
-                  className={`w-1/5 border border-white p-2`}
-                  id={i.toString() + "round"}
-                />
-              ))}
-            </div>
+          <div className="flex w-full">
+            {Array.from({ length: playIntervals.length }).map((_, i) => (
+              <button
+                key={i}
+                className={`w-1/5 border border-white p-2`}
+                id={i.toString() + "round"}
+              />
+            ))}
+          </div>
 
-            <div className="flex flex-row justify-between pt-2">
-              <p>{time.currentTime}</p>
-              <p>0:30</p>
-            </div>
+          <div className="flex flex-row justify-between pt-2">
+            <p>{time.currentTime}</p>
+            <p>0:30</p>
           </div>
         </div>
       </div>

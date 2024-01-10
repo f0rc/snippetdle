@@ -1,31 +1,16 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
 import "./thing.css";
 
 export default function CassettePlayer({
-  rewind,
-  play,
+  roationAngle,
+  isPlaying,
+  handlePlay,
 }: {
-  rewind: boolean;
-  play: boolean;
+  roationAngle: number;
+  isPlaying: boolean;
+  handlePlay: () => void;
 }) {
-  const [rotationDegree, setRotationDegree] = useState(0);
-
-  // Function to handle the rotation logic
-  useEffect(() => {
-    let intervalId: NodeJS.Timeout;
-
-    if (play) {
-      intervalId = setInterval(() => {
-        setRotationDegree((prevDegree) =>
-          rewind ? prevDegree - 1 : prevDegree + 1,
-        );
-      }, 10);
-    }
-
-    return () => clearInterval(intervalId);
-  }, [play, rewind]);
   return (
     // remove this
     // <div className="flex w-full flex-1 items-center justify-center px-4">
@@ -58,18 +43,13 @@ export default function CassettePlayer({
 
           {/* cassett circle things that rotate */}
 
-          <div className="flex w-full flex-1 flex-row items-start justify-between py-4 md:px-14 md:pt-10 ">
+          <div className="flex w-full flex-1 flex-row items-center justify-between py-4 md:px-14 md:pt-10">
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white md:h-20 md:w-20">
               <div
-                className={`${
-                  play
-                    ? rewind
-                      ? " animate-custom-spin-custom-speed-r "
-                      : " animate-custom-spin-custom-speed "
-                    : ""
-                }" relative flex h-4/5 w-4/5 items-center justify-center rounded-full bg-black`}
+                className={`relative flex h-4/5 w-4/5 items-center justify-center rounded-full bg-black`}
                 style={{
-                  transform: `rotate(${rotationDegree}deg)`,
+                  transformOrigin: `center`,
+                  transform: `rotate(${roationAngle}deg)`,
                 }}
               >
                 <div className="absolute z-0 h-full w-1 origin-center -rotate-[30deg] bg-white"></div>
@@ -78,15 +58,51 @@ export default function CassettePlayer({
                 <div className="absolute h-4/5 w-4/5 rounded-full bg-black"></div>
               </div>
             </div>
+
+            <button
+              className=" flex items-center justify-center"
+              onClick={handlePlay}
+            >
+              {isPlaying ? (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={2}
+                  stroke="currentColor"
+                  className="h-10 w-10"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15.75 5.25v13.5m-7.5-13.5v13.5"
+                  />
+                </svg>
+              ) : (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="2"
+                  stroke="currentColor"
+                  className="h-10 w-10"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z"
+                  />
+                </svg>
+              )}
+            </button>
+
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white md:h-20 md:w-20">
               <div
-                className={`${
-                  play
-                    ? rewind
-                      ? " animate-custom-spin-custom-speed-r "
-                      : " animate-custom-spin-custom-speed "
-                    : ""
-                }" relative flex h-4/5 w-4/5 items-center justify-center rounded-full bg-black`}
+                className={`relative flex h-4/5 w-4/5 items-center justify-center rounded-full bg-black`}
+                style={{
+                  transformOrigin: `center`,
+                  transform: `rotate(${roationAngle}deg)`,
+                }}
               >
                 <div className="absolute z-0 h-full w-1 origin-center -rotate-[30deg] bg-white"></div>
                 <div className="absolute z-0 h-full w-1 origin-center rotate-[30deg] bg-white"></div>

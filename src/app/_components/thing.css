@@ -1,9 +1,9 @@
 @keyframes custom-spin-custom-speed {
   0% {
-    transform: rotate(0deg);
+    transform: rotate(var(0deg));
   }
   100% {
-    transform: rotate(360deg);
+    transform: rotate(calc(360deg));
   }
 }
 
