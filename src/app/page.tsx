@@ -6,7 +6,7 @@ export default async function Home() {
 
   return (
     <main className="flex flex-row items-center justify-center">
-      <div className="flex h-full w-full justify-center lg:pl-40">
+      <div className="flex h-full w-full justify-center">
         {!data.dailyChallenge ? (
           <div>Unable to fetch Daily Challenge</div>
         ) : (

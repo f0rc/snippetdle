@@ -44,9 +44,12 @@ const GameMain = (GameMainProps: GameMainProps) => {
       songStep: songStep,
       artistName: selectAnswer,
       correct:
-        selectAnswer === GameMainProps.options.dailyChallenge.song.artist_name,
+        selectAnswer ===
+          GameMainProps.options.dailyChallenge.song.artist_name && !skip,
       skip: skip,
     };
+
+    const round = document.getElementById(songStep.toString() + "round");
 
     if (roundInfo.length <= 5 && !gameOver) {
       const updatedRouned = [...roundInfo];
@@ -54,8 +57,16 @@ const GameMain = (GameMainProps: GameMainProps) => {
       setRoundInfo(updatedRouned);
       // check if won else move to next round
       if (newRoundInfo.correct) {
+        if (round) {
+          round.style.backgroundColor = "#3BB143";
+        }
         setGameOver(true);
       } else {
+        if (round && skip) {
+          round.style.backgroundColor = "#808080";
+        } else {
+          round && (round.style.backgroundColor = "#FF0000");
+        }
         setSongStep((prev) => prev + 1);
       }
 
@@ -96,6 +107,7 @@ const GameMain = (GameMainProps: GameMainProps) => {
   };
 
   const handlePlay = async () => {
+    console.log("CLICKEDPLAY", audioPlayer.current);
     if (!isPlaying && songStep < playIntervals.length && !gameOver) {
       if (songStep <= 5) {
         await playAudio(songStep);
@@ -175,8 +187,19 @@ const GameMain = (GameMainProps: GameMainProps) => {
   }, [isPlaying]);
 
   return (
-    <div className="flex w-full max-w-4xl flex-col items-center justify-center pt-4">
-      <div className="flex w-full flex-col items-center justify-center gap-4">
+    <div className="flex h-full w-full max-w-xl flex-col items-center justify-center px-4 pt-4 lg:px-0 lg:pt-0">
+      <audio
+        ref={audioPlayer}
+        src={GameMainProps.options.dailyChallenge.song.preview_url}
+        preload="true"
+        loop
+        onTimeUpdate={() => {
+          if (audioPlayer.current) {
+            setTime(getAudioDuration(audioPlayer.current));
+          }
+        }}
+      />
+      <div className="flex h-full w-full flex-col items-center justify-center gap-4">
         <CassettePlayer
           roationAngle={rotation}
           isPlaying={isPlaying}
@@ -185,18 +208,6 @@ const GameMain = (GameMainProps: GameMainProps) => {
 
         {/* PLAYER */}
         <div className="flex w-full flex-col rounded-full lg:max-w-sm">
-          <audio
-            ref={audioPlayer}
-            src={GameMainProps.options.dailyChallenge.song.preview_url}
-            preload="true"
-            loop
-            onTimeUpdate={(e) => {
-              if (audioPlayer.current) {
-                setTime(getAudioDuration(audioPlayer.current));
-              }
-            }}
-          />
-
           {/* two divs with 5 sections, one div is the background and the other is overlay indicating the elapsed time */}
           {/* <div className="absolute z-0 h-4 w-full max-w-sm rounded-full bg-[#16222A]" />
             <div
@@ -222,7 +233,7 @@ const GameMain = (GameMainProps: GameMainProps) => {
       </div>
       <div className="flex w-full flex-col items-center gap-2 pt-4">
         {/* ROUND INFO */}
-        <div className="hidden w-4/5 flex-col gap-1 rounded-md bg-none lg:flex lg:w-1/2">
+        <div className="hidden w-4/5 flex-col gap-1 rounded-md bg-none md:flex lg:w-1/2">
           {roundInfo.map((round) => (
             <div
               key={round.songStep}
@@ -238,7 +249,7 @@ const GameMain = (GameMainProps: GameMainProps) => {
                 {round.songStep + 1}.{" "}
                 {round.skip ? "Skipped" : round.artistName}
               </p>
-              <p>{round.correct ? "Correct" : "Wrong"}</p>
+              <p>{round.skip ? "" : round.correct ? "Correct" : "Wrong"}</p>
             </div>
           ))}
         </div>
@@ -271,7 +282,7 @@ const GameMain = (GameMainProps: GameMainProps) => {
           </div>
         </div>
         {/* Search results */}
-        <div className="flex w-4/5 flex-col rounded-md bg-white lg:w-1/2">
+        <div className="flex w-4/5 flex-col gap-1 rounded-md lg:w-1/2">
           {artistSearch.isLoading && artistSearch.fetchStatus !== "idle" ? (
             <div className="rounded-sm border-b border-black bg-stone-100 p-2 text-sm text-black hover:bg-stone-200 lg:text-xl">
               loading...
@@ -288,7 +299,7 @@ const GameMain = (GameMainProps: GameMainProps) => {
                   setSelectAnswer(artist.name);
                   setInputValue(artist.name);
                 }}
-                className="rounded-sm border-b border-black bg-stone-100 p-2 text-sm text-black hover:bg-stone-200 focus:ring-1 focus:ring-blue-500 lg:text-xl"
+                className="rounded-sm border-b border-black bg-stone-100 p-2 text-sm text-black ring-blue-600 selection:z-10 selection:ring-2 hover:bg-stone-200 focus:bg-stone-200 focus:ring-4 focus:ring-blue-500 lg:text-xl"
               >
                 {artist.name}
               </button>
