@@ -1,16 +1,33 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import "./thing.css";
 
 export default function CassettePlayer({
-  roationAngle,
   isPlaying,
   handlePlay,
 }: {
-  roationAngle: number;
   isPlaying: boolean;
   handlePlay: () => void;
 }) {
+  const [rotation, setRotation] = useState(0);
+
+  useEffect(() => {
+    if (isPlaying) {
+      if (false) {
+        const interval = setInterval(() => {
+          setRotation((r) => r - 1);
+        }, 10);
+        return () => clearInterval(interval);
+      } else {
+        const interval = setInterval(() => {
+          setRotation((r) => r + 1);
+        }, 10);
+        return () => clearInterval(interval);
+      }
+    }
+  }, [isPlaying]);
+
   return (
     <div className="relative z-20 flex w-full items-center justify-center rounded-2xl bg-zinc-800 md:h-[350px]">
       {/* side clips ons */}
@@ -45,7 +62,7 @@ export default function CassettePlayer({
               className={`relative flex h-4/5 w-4/5 items-center justify-center rounded-full bg-black`}
               style={{
                 transformOrigin: `center`,
-                transform: `rotate(${roationAngle}deg)`,
+                transform: `rotate(${rotation}deg)`,
               }}
             >
               <div className="absolute z-0 h-full w-1 origin-center -rotate-[30deg] bg-white"></div>
@@ -99,7 +116,7 @@ export default function CassettePlayer({
               className={`relative flex h-4/5 w-4/5 items-center justify-center rounded-full bg-black`}
               style={{
                 transformOrigin: `center`,
-                transform: `rotate(${roationAngle}deg)`,
+                transform: `rotate(${rotation}deg)`,
               }}
             >
               <div className="absolute z-0 h-full w-1 origin-center -rotate-[30deg] bg-white"></div>

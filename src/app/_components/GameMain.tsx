@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useRef, useEffect, type ChangeEvent, use } from "react";
+import { useState, useRef, useEffect } from "react";
 import { api } from "~/trpc/react";
 import type { dailyChallengeType } from "~/trpc/utils";
 import CassettePlayer from "./CassettePlayer";
@@ -12,11 +12,28 @@ type GameMainProps = {
   };
 };
 
+interface roundInfoType {
+  songStep: number;
+  artistName: string;
+  correct: boolean;
+  skip: boolean;
+}
+
+type GameMainState = {
+  gameId: string;
+  sync: boolean;
+  gameDate: Date;
+  volume: number;
+  songStep: number;
+  gameOver: boolean;
+  roundInfo: roundInfoType[];
+};
+
 const GameMain = (GameMainProps: GameMainProps) => {
   const audioPlayer = useRef<HTMLAudioElement>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [volume, setVolume] = useState(30);
 
+  //  MARK: Volume settings
+  const [volume, setVolume] = useState(30);
   useEffect(() => {
     if (audioPlayer.current) {
       audioPlayer.current.volume = volume / 100;
@@ -24,6 +41,7 @@ const GameMain = (GameMainProps: GameMainProps) => {
       setVolume(volume);
     }
   }, [volume]);
+  // MARK: *Volume settings end
 
   const [songStep, setSongStep] = useState(0);
 
@@ -31,12 +49,6 @@ const GameMain = (GameMainProps: GameMainProps) => {
 
   const [gameOver, setGameOver] = useState(false);
 
-  interface roundInfoType {
-    songStep: number;
-    artistName: string;
-    correct: boolean;
-    skip: boolean;
-  }
   const [roundInfo, setRoundInfo] = useState<roundInfoType[]>([]);
 
   const handleRoundSubmit = (skip: boolean) => {
@@ -49,24 +61,14 @@ const GameMain = (GameMainProps: GameMainProps) => {
       skip: skip,
     };
 
-    const round = document.getElementById(songStep.toString() + "round");
-
     if (roundInfo.length <= 5 && !gameOver) {
       const updatedRouned = [...roundInfo];
       updatedRouned.push(newRoundInfo);
       setRoundInfo(updatedRouned);
       // check if won else move to next round
       if (newRoundInfo.correct) {
-        if (round) {
-          round.style.backgroundColor = "#3BB143";
-        }
         setGameOver(true);
       } else {
-        if (round && skip) {
-          round.style.backgroundColor = "#808080";
-        } else {
-          round && (round.style.backgroundColor = "#FF0000");
-        }
         setSongStep((prev) => prev + 1);
       }
 
@@ -77,8 +79,15 @@ const GameMain = (GameMainProps: GameMainProps) => {
     }
   };
 
+  // MARK: play audio
   const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
-
+  const [time, setTime] = useState({
+    duration: "0:00",
+    currentTime: "0:00",
+    timeLeft: "0:30",
+  });
+  const [isPlaying, setIsPlaying] = useState(false);
+  // manage the audio player intervals
   const playAudio = async (index: number) => {
     if (index >= playIntervals.length || !audioPlayer.current) {
       setIsPlaying(false);
@@ -86,7 +95,7 @@ const GameMain = (GameMainProps: GameMainProps) => {
     }
 
     const interval = playIntervals[index];
-    console.log("interval", interval);
+    // console.log("interval", interval);
     audioPlayer.current.currentTime = 0;
 
     const playPromise = audioPlayer.current.play();
@@ -105,9 +114,8 @@ const GameMain = (GameMainProps: GameMainProps) => {
     setIsPlaying(false);
     timeoutId && clearTimeout(timeoutId);
   };
-
+  // logic to play audio
   const handlePlay = async () => {
-    console.log("CLICKEDPLAY", audioPlayer.current);
     if (!isPlaying && songStep < playIntervals.length && !gameOver) {
       if (songStep <= 5) {
         await playAudio(songStep);
@@ -128,26 +136,15 @@ const GameMain = (GameMainProps: GameMainProps) => {
       setIsPlaying(true);
     }
   };
+  // MARK: *play audio end
 
-  // TODO: add logic to unhide the album cover
-  const [hidden, setHidden] = useState(false);
-
-  const [time, setTime] = useState({
-    duration: "0:00",
-    currentTime: "0:00",
-    timeLeft: "0:30",
-  });
-
-  // fetch artist data
+  // MARK: fetch artist data
   const [inputValue, setInputValue] = useState("");
   const [debouncedInputValue, setDebouncedInputValue] = useState("");
 
   const [selectAnswer, setSelectAnswer] = useState("");
 
-  const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setInputValue(event.target.value);
-  };
-
+  // debounce input useeffect
   useEffect(() => {
     const delayInputTimeoutId = setTimeout(() => {
       if (inputValue !== selectAnswer) {
@@ -158,6 +155,7 @@ const GameMain = (GameMainProps: GameMainProps) => {
     return () => clearTimeout(delayInputTimeoutId);
   }, [inputValue, 1000]);
 
+  // api call for artist search
   const artistSearch = api.game.getArtist.useQuery(
     { artistName: debouncedInputValue },
     {
@@ -167,24 +165,55 @@ const GameMain = (GameMainProps: GameMainProps) => {
         !gameOver,
     },
   );
+  // MARK: *fetch artist data end
 
-  const [rotation, setRotation] = useState(0);
-
+  // MARK: game cache logic
+  // load from local storage on mount
   useEffect(() => {
-    if (isPlaying) {
-      if (false) {
-        const interval = setInterval(() => {
-          setRotation((r) => r - 1);
-        }, 10);
-        return () => clearInterval(interval);
-      } else {
-        const interval = setInterval(() => {
-          setRotation((r) => r + 1);
-        }, 10);
-        return () => clearInterval(interval);
-      }
+    const roundInfoLocal = localStorage.getItem("roundInfo");
+
+    console.log("roundInfoLocal", roundInfoLocal);
+    if (roundInfoLocal) {
+      const x = JSON.parse(roundInfoLocal) as roundInfoType[];
+      setRoundInfo(x);
+      setSongStep(x.length);
     }
-  }, [isPlaying]);
+  }, []);
+
+  // save to local storage on roundInfo change
+  useEffect(() => {
+    if (roundInfo.length) {
+      localStorage.setItem("roundInfo", JSON.stringify(roundInfo));
+    }
+  }, [roundInfo]);
+
+  // useeffect to color in the rounds
+  useEffect(() => {
+    if (roundInfo.length) {
+      roundInfo.forEach((round) => {
+        const roundElement = document.getElementById(round.songStep + "round");
+        if (roundElement) {
+          if (round.correct) {
+            roundElement.style.backgroundColor = "#3BB143";
+          } else if (round.skip) {
+            roundElement.style.backgroundColor = "#808080";
+          } else {
+            roundElement.style.backgroundColor = "#FF0000";
+          }
+        }
+      });
+    }
+  }, [roundInfo]);
+  const [gameInfo, setGameInfo] = useState<GameMainState>({
+    gameId: "",
+    sync: false,
+    gameDate: new Date(),
+    volume: 30,
+    songStep: 0,
+    gameOver: false,
+    roundInfo: [],
+  });
+  // MARK: *game cache logic end
 
   return (
     <div className="flex h-full w-full max-w-xl flex-col items-center justify-center px-4 pt-4 lg:px-0 lg:pt-0">
@@ -200,11 +229,7 @@ const GameMain = (GameMainProps: GameMainProps) => {
         }}
       />
       <div className="flex h-full w-full flex-col items-center justify-center gap-4">
-        <CassettePlayer
-          roationAngle={rotation}
-          isPlaying={isPlaying}
-          handlePlay={handlePlay}
-        />
+        <CassettePlayer isPlaying={isPlaying} handlePlay={handlePlay} />
 
         {/* PLAYER */}
         <div className="flex w-full flex-col rounded-full lg:max-w-sm">
@@ -231,9 +256,13 @@ const GameMain = (GameMainProps: GameMainProps) => {
           </div>
         </div>
       </div>
-      <div className="flex w-full flex-col items-center gap-2 pt-4">
+      <div className="flex w-full flex-col items-center gap-2  pt-4">
         {/* ROUND INFO */}
-        <div className="hidden w-4/5 flex-col gap-1 rounded-md bg-none md:flex lg:w-1/2">
+        <div
+          className={` w-4/5 flex-col gap-1 rounded-md bg-none  ${
+            gameOver ? " hidden" : " hidden md:flex lg:w-1/2 "
+          }`}
+        >
           {roundInfo.map((round) => (
             <div
               key={round.songStep}
@@ -246,7 +275,7 @@ const GameMain = (GameMainProps: GameMainProps) => {
               }`}
             >
               <p>
-                {round.songStep + 1}.{" "}
+                {/* {round.songStep + 1}.{" "} */}
                 {round.skip ? "Skipped" : round.artistName}
               </p>
               <p>{round.skip ? "" : round.correct ? "Correct" : "Wrong"}</p>
@@ -254,15 +283,19 @@ const GameMain = (GameMainProps: GameMainProps) => {
           ))}
         </div>
         {/* INPUT */}
-        <div className="flex w-4/5 flex-row justify-center gap-2 lg:w-1/2">
+        <div
+          className={`flex w-4/5 flex-row justify-center gap-2 ${
+            gameOver ? " hidden" : ""
+          }`}
+        >
           <input
             type="text"
-            className=" w-full rounded-md bg-stone-100 p-2 text-base  text-black lg:text-xl"
+            className=" w-4/5 rounded-md bg-stone-100 p-2 text-base  text-black lg:text-xl"
             placeholder="Guess the artist"
             value={inputValue}
-            onChange={handleInputChange}
+            onChange={(e) => setInputValue(e.target.value)}
           />
-          <div className="flex flex-row gap-2">
+          <div className="flex w-1/5 flex-row gap-2">
             <button
               className="rounded-lg bg-blue-600 px-4 py-2"
               onClick={() => {
@@ -281,8 +314,33 @@ const GameMain = (GameMainProps: GameMainProps) => {
             </button>
           </div>
         </div>
+        <div
+          className={`w-full gap-4 ${
+            gameOver ? " flex " : " hidden "
+          } flex-col  items-center justify-center md:flex-row`}
+        >
+          <Image
+            src={GameMainProps.options.dailyChallenge.song.album_image}
+            alt="album cover"
+            width={200}
+            height={200}
+            className={`rounded-md ${gameOver ? "" : " hidden "}`}
+          />
+          <div>
+            <p className="text-2xl">
+              {GameMainProps.options.dailyChallenge.song.album_name}
+            </p>
+            <p className="text-xl">
+              {GameMainProps.options.dailyChallenge.song.artist_name}
+            </p>
+
+            <p className="text-xl">release date#TODO</p>
+
+            <p className="text-xl">score in emoji#TODO</p>
+          </div>
+        </div>
         {/* Search results */}
-        <div className="flex w-4/5 flex-col gap-1 rounded-md lg:w-1/2">
+        <div className="flex w-4/5 flex-col gap-1 rounded-md">
           {artistSearch.isLoading && artistSearch.fetchStatus !== "idle" ? (
             <div className="rounded-sm border-b border-black bg-stone-100 p-2 text-sm text-black hover:bg-stone-200 lg:text-xl">
               loading...
@@ -299,7 +357,7 @@ const GameMain = (GameMainProps: GameMainProps) => {
                   setSelectAnswer(artist.name);
                   setInputValue(artist.name);
                 }}
-                className="rounded-sm border-b border-black bg-stone-100 p-2 text-sm text-black ring-blue-600 selection:z-10 selection:ring-2 hover:bg-stone-200 focus:bg-stone-200 focus:ring-4 focus:ring-blue-500 lg:text-xl"
+                className="w-4/5 rounded-sm border-b border-black bg-stone-100 p-2 text-sm text-black ring-blue-600 selection:z-10 selection:ring-2 hover:bg-stone-200 focus:bg-stone-200 focus:ring-4 focus:ring-blue-500 lg:text-xl"
               >
                 {artist.name}
               </button>
