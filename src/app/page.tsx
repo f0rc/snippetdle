@@ -5,7 +5,7 @@ export default async function Home() {
   const data = await api.game.getDailyChallenge.query();
 
   return (
-    <main className="flex flex-row items-center justify-center ">
+    <main className="flex flex-row items-center justify-center">
       <div className="flex h-full w-full justify-center">
         {!data.dailyChallenge ? (
           <div>Unable to fetch Daily Challenge</div>

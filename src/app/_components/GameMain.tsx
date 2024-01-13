@@ -223,10 +223,19 @@ const GameMain = (GameMainProps: GameMainProps) => {
     }
   }, [gameInfo]);
 
-  console.log(GameMainProps.options.dailyChallenge.song.artist_name);
-
+  const getScoreEmojis = (roundInfo: roundInfoType[]) => {
+    return roundInfo.map((round) => {
+      if (round.skip) {
+        return "⬜"; // Gray square for skipped
+      } else if (round.correct) {
+        return "✅"; // Green checkmark for correct
+      } else {
+        return "❌"; // Red X for incorrect
+      }
+    });
+  };
   return (
-    <div className="flex h-full w-full max-w-xl flex-col items-center justify-center px-4 pt-4 lg:px-0 lg:pt-0">
+    <div className="flex h-full w-screen max-w-xl flex-col items-center justify-center px-4 pt-4 lg:px-0 lg:pt-0">
       <audio
         ref={audioPlayer}
         src={GameMainProps.options.dailyChallenge.song.preview_url}
@@ -269,11 +278,10 @@ const GameMain = (GameMainProps: GameMainProps) => {
       </div>
 
       {loaded && (
-        <div className="flex w-full flex-col items-center gap-2  pt-4">
+        <div className="flex w-full flex-col items-center gap-2 pt-4">
           {/* ROUND INFO */}
           <div
-            className={`flex flex-row items-center justify-center gap-1 overflow-hidden overscroll-y-auto rounded-md`}
-            style={{ maxHeight: "300px", overflowY: "auto" }}
+            className={`flex flex-row items-center justify-center gap-1 rounded-md`}
           >
             {gameInfo.roundInfo.map((round) => (
               <div
@@ -351,9 +359,28 @@ const GameMain = (GameMainProps: GameMainProps) => {
                 {GameMainProps.options.dailyChallenge.song.artist_name}
               </p>
 
-              <p className="text-xl">release date#TODO</p>
+              <p className="text-xl">
+                {new Date(
+                  GameMainProps.options.dailyChallenge.song.album_release_date,
+                ).getFullYear()}
+              </p>
 
-              <p className="text-xl">score in emoji#TODO</p>
+              <div className="flex gap-1">
+                {getScoreEmojis(gameInfo.roundInfo).map((emoji, index) => (
+                  <span
+                    key={index}
+                    className={
+                      emoji === "⬜"
+                        ? "text-gray-500"
+                        : emoji === "❌"
+                          ? "text-red-500"
+                          : "text-green-500"
+                    }
+                  >
+                    {emoji}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
           {/* Search results */}
