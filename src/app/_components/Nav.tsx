@@ -6,7 +6,7 @@ const Nav = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   return (
     <>
-      <div className="border-b">
+      <div className="">
         <nav className="z-0 mx-auto flex w-full max-w-screen-2xl p-4">
           <div className="flex w-full flex-row">
             <ul className="">

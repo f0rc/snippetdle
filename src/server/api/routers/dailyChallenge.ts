@@ -209,12 +209,12 @@ export const gameRouter = createTRPCRouter({
 
   getDailyChallenge: publicProcedure.query(async ({ ctx }) => {
     // TODO TEST IF THIS ACTUALLY WORKS
-    const date = new Date().toLocaleDateString("en-US");
+    const gameDate = new Date().toLocaleDateString("en-US");
 
     const dbRes = await ctx.db
       .select()
       .from(dailyChallenge)
-      .where(eq(sql`DATE(${dailyChallenge.date})`, date))
+      .where(eq(sql`DATE(${dailyChallenge.date})`, gameDate))
       .leftJoin(Song, eq(dailyChallenge.songId, Song.id))
       .limit(1);
 
@@ -236,7 +236,7 @@ export const gameRouter = createTRPCRouter({
     return {
       dailyChallenge: {
         id: dailyChallengeRes.dailyChallenge.id,
-        date: dailyChallengeRes.dailyChallenge.date,
+        date: gameDate,
         song: {
           id: dailyChallengeRes.Song.id,
           preview_url: dailyChallengeRes.Song.preview_url,
