@@ -173,6 +173,12 @@ const GameMain = (GameMainProps: GameMainProps) => {
   );
   // MARK: *fetch artist data end
 
+  useEffect(() => {
+    if (songStep >= 6) {
+      setGameInfo((p) => ({ ...p, gameOver: true }));
+    }
+  }, [songStep]);
+
   // MARK: game cache logic
 
   // useeffect to color in the rounds
@@ -217,7 +223,7 @@ const GameMain = (GameMainProps: GameMainProps) => {
     }
   }, [gameInfo]);
 
-  console.log("LOADED");
+  console.log(GameMainProps.options.dailyChallenge.song.artist_name);
 
   return (
     <div className="flex h-full w-full max-w-xl flex-col items-center justify-center px-4 pt-4 lg:px-0 lg:pt-0">
@@ -247,7 +253,7 @@ const GameMain = (GameMainProps: GameMainProps) => {
 
           <div className="flex w-full">
             {Array.from({ length: playIntervals.length }).map((_, i) => (
-              <button
+              <div
                 key={i}
                 className={`w-1/5 border border-white p-2`}
                 id={i.toString() + "round"}
@@ -266,9 +272,8 @@ const GameMain = (GameMainProps: GameMainProps) => {
         <div className="flex w-full flex-col items-center gap-2  pt-4">
           {/* ROUND INFO */}
           <div
-            className={` w-4/5 flex-col gap-1 rounded-md bg-none  ${
-              gameInfo.gameOver ? " hidden" : " hidden md:flex lg:w-1/2 "
-            }`}
+            className={`flex flex-row items-center justify-center gap-1 overflow-hidden overscroll-y-auto rounded-md`}
+            style={{ maxHeight: "300px", overflowY: "auto" }}
           >
             {gameInfo.roundInfo.map((round) => (
               <div
@@ -281,11 +286,7 @@ const GameMain = (GameMainProps: GameMainProps) => {
                       : "bg-red-200"
                 }`}
               >
-                <p>
-                  {/* {round.songStep + 1}.{" "} */}
-                  {round.skip ? "Skipped" : round.artistName}
-                </p>
-                <p>{round.skip ? "" : round.correct ? "Correct" : "Wrong"}</p>
+                <p>{round.skip ? "Skipped" : round.artistName}</p>
               </div>
             ))}
           </div>
@@ -356,7 +357,11 @@ const GameMain = (GameMainProps: GameMainProps) => {
             </div>
           </div>
           {/* Search results */}
-          <div className="flex w-4/5 flex-col gap-1 rounded-md">
+          <div
+            className={`flex w-4/5 flex-col gap-1 rounded-md ${
+              gameInfo.gameOver ? " hidden " : ""
+            }`}
+          >
             {artistSearch.isLoading && artistSearch.fetchStatus !== "idle" ? (
               <div className="rounded-sm border-b border-black bg-stone-100 p-2 text-sm text-black hover:bg-stone-200 lg:text-xl">
                 loading...
