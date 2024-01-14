@@ -29,12 +29,15 @@ const Nav = () => {
                 </a>
               </li>
 
-              <button className="rounded-md p-2 font-semibold hover:bg-black/20">
+              {/* <button className="rounded-md p-2 font-semibold hover:bg-black/20">
                 Log In
-              </button>
-              <button className="rounded-md bg-yellow-400 p-2 font-semibold text-black hover:bg-yellow-300">
-                Sign Up
-              </button>
+              </button> */}
+              <a
+                className="rounded-md bg-yellow-400 p-2 font-semibold text-black hover:bg-yellow-300"
+                href={"/signin"}
+              >
+                Sign In
+              </a>
 
               <button
                 className="rounded-md p-2 font-semibold hover:bg-black/20 lg:hidden"

@@ -255,10 +255,10 @@ const GameMain = (GameMainProps: GameMainProps) => {
         <div className="flex w-full flex-col rounded-full lg:max-w-sm">
           {/* two divs with 5 sections, one div is the background and the other is overlay indicating the elapsed time */}
           {/* <div className="absolute z-0 h-4 w-full max-w-sm rounded-full bg-[#16222A]" />
-            <div
-              className="relative z-10 h-4 w-0 rounded-full bg-[#E2E941]"
-              id="progressBar"
-            /> */}
+          <div
+            className="relative z-10 h-4 w-0 rounded-full bg-[#E2E941]"
+            id="progressBar"
+          /> */}
 
           <div className="flex w-full">
             {Array.from({ length: playIntervals.length }).map((_, i) => (
@@ -278,15 +278,13 @@ const GameMain = (GameMainProps: GameMainProps) => {
       </div>
 
       {loaded && (
-        <div className="flex w-full flex-col items-center gap-2 pt-4">
+        <div className="flex w-full flex-col items-center gap-2 pb-5 pt-5">
           {/* ROUND INFO */}
-          <div
-            className={`flex flex-row items-center justify-center gap-1 rounded-md`}
-          >
+          <div className="flex w-full flex-row items-center justify-start gap-1 rounded-md pb-4 md:justify-center">
             {gameInfo.roundInfo.map((round) => (
               <div
                 key={round.songStep}
-                className={`flex flex-row justify-between rounded-lg p-2 text-sm text-black ${
+                className={`flex flex-row rounded-lg p-2 text-sm text-black ${
                   round.skip
                     ? "bg-gray-400"
                     : round.correct
@@ -331,7 +329,7 @@ const GameMain = (GameMainProps: GameMainProps) => {
             </div>
           </div>
           <div
-            className={`w-full gap-4 ${
+            className={`w-full gap-4 pt-5 ${
               gameInfo.gameOver ? " flex " : " hidden "
             } flex-col  items-center justify-center md:flex-row`}
           >

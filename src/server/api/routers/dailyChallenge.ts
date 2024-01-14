@@ -221,13 +221,15 @@ export const gameRouter = createTRPCRouter({
     const dailyChallengeRes = dbRes[0];
 
     if (!dailyChallengeRes) {
-      console.log("res not available");
+      console.log("[ERROR]: daily challenge not available");
+      // need to make a new daily challenge
       return {
         dailyChallenge: null,
       };
     }
 
     if (!dailyChallengeRes.Song) {
+      console.log("[ERROR]: song not available");
       return {
         dailyChallenge: null,
       };

@@ -1,8 +1,13 @@
 import { api } from "~/trpc/server";
-import GameMain from "./_components/GameMain";
+import GameMain from "../_components/GameMain";
+import { getSession } from "next-auth/react";
 
 export default async function Home() {
   const data = await api.game.getDailyChallenge.query();
+
+  const session = await getSession();
+
+  console.log("session", session);
 
   return (
     <main className="flex flex-row items-center justify-center">
