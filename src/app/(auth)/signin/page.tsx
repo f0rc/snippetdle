@@ -38,7 +38,7 @@ const page = () => {
         <div className="flex w-full flex-col">
           <button
             className="flex w-full justify-center gap-4 rounded border border-gray-200 bg-white px-3 py-2 hover:bg-gray-300/50 disabled:opacity-60"
-            onClick={() => signIn("spotify", { callbackUrl: "/" })}
+            onClick={() => signIn("spotify")}
           >
             <svg
               width={24}
@@ -55,7 +55,7 @@ const page = () => {
 
           <button
             className="flex w-full justify-center gap-4 rounded border border-gray-200 bg-white px-3 py-2 hover:bg-gray-300/50 disabled:opacity-60"
-            onClick={() => signIn("discord", { callbackUrl: "/" })}
+            onClick={() => signIn("discord")}
           >
             <svg
               role="img"

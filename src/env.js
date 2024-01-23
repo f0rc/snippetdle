@@ -29,10 +29,11 @@ export const env = createEnv({
       process.env.VERCEL ? z.string() : z.string().url(),
     ),
     // Add ` on ID and SECRET if you want to make sure they're not empty
-    DISCORD_CLIENT_ID: z.string(),
-    DISCORD_CLIENT_SECRET: z.string(),
-    spotify_client_id: z.string(),
-    spotify_client_secret: z.string(),
+    AUTH_DISCORD_CLIENT_ID: z.string(),
+    AUTH_DISCORD_CLIENT_SECRET: z.string(),
+    AUTH_SPOTIFY_CLIENT_ID: z.string(),
+    AUTH_SPOTIFY_CLIENT_SECRET: z.string(),
+    AUTH_DISCORD_ADMIN_ID: z.string().optional(),
   },
 
   /**
@@ -53,10 +54,11 @@ export const env = createEnv({
     NODE_ENV: process.env.NODE_ENV,
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
     NEXTAUTH_URL: process.env.NEXTAUTH_URL,
-    DISCORD_CLIENT_ID: process.env.DISCORD_CLIENT_ID,
-    DISCORD_CLIENT_SECRET: process.env.DISCORD_CLIENT_SECRET,
-    spotify_client_id: process.env.spotify_client_id,
-    spotify_client_secret: process.env.spotify_client_secret,
+    AUTH_DISCORD_CLIENT_ID: process.env.AUTH_DISCORD_CLIENT_ID,
+    AUTH_DISCORD_CLIENT_SECRET: process.env.AUTH_DISCORD_CLIENT_SECRET,
+    AUTH_SPOTIFY_CLIENT_ID: process.env.AUTH_SPOTIFY_CLIENT_ID,
+    AUTH_SPOTIFY_CLIENT_SECRET: process.env.AUTH_SPOTIFY_CLIENT_SECRET,
+    AUTH_DISCORD_ADMIN_ID: process.env.AUTH_DISCORD_ADMIN_ID,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

@@ -1,0 +1,130 @@
+diff --git a/index.d.ts b/index.d.ts
+index d7dc26351c624594199b9f4ff6a1ace698d7d256..46d0a22cfde79641f48ffd3a550bc6637d0dd1d3 100644
+--- a/index.d.ts
++++ b/index.d.ts
+@@ -15,6 +15,7 @@
+  *
+  * @module @auth/drizzle-adapter
+  */
++import { DefaultSchema } from "./lib/pg.js";
+ import { SqlFlavorOptions, TableFn } from "./lib/utils.js";
+ import type { Adapter } from "@auth/core/adapters";
+ /**
+@@ -241,5 +242,5 @@ import type { Adapter } from "@auth/core/adapters";
+  * ---
+  *
+  **/
+-export declare function DrizzleAdapter<SqlFlavor extends SqlFlavorOptions>(db: SqlFlavor, table?: TableFn<SqlFlavor>): Adapter;
++export declare function DrizzleAdapter<SqlFlavor extends SqlFlavorOptions>(db: SqlFlavor, tables: DefaultSchema, table?: TableFn<SqlFlavor>): Adapter;
+ //# sourceMappingURL=index.d.ts.map
+\ No newline at end of file
+diff --git a/index.d.ts.map b/index.d.ts.map
+index 4be6d6382a5b69824fdca504473fd82c080147d4..e435f22aa005d9d059a48d86da7e3bd61f39845f 100644
+--- a/index.d.ts.map
++++ b/index.d.ts.map
+@@ -1 +1 @@
+-{"version":3,"file":"index.d.ts","sourceRoot":"","sources":["src/index.ts"],"names":[],"mappings":"AAAA;;;;;;;;;;;;;;;;GAgBG;AAQH,OAAO,EAAE,gBAAgB,EAAE,OAAO,EAAE,MAAM,gBAAgB,CAAA;AAG1D,OAAO,KAAK,EAAE,OAAO,EAAE,MAAM,qBAAqB,CAAA;AAElD;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;IA+NI;AACJ,wBAAgB,cAAc,CAAC,SAAS,SAAS,gBAAgB,EAC/D,EAAE,EAAE,SAAS,EACb,KAAK,CAAC,EAAE,OAAO,CAAC,SAAS,CAAC,GACzB,OAAO,CAYT"}
+\ No newline at end of file
++{"version":3,"file":"index.d.ts","sourceRoot":"","sources":["src/index.ts"],"names":[],"mappings":"AAAA;;;;;;;;;;;;;;;;GAgBG;AAMH,OAAO,EAAE,aAAa,EAAoB,MAAM,aAAa,CAAA;AAE7D,OAAO,EAAE,gBAAgB,EAAE,OAAO,EAAE,MAAM,gBAAgB,CAAA;AAG1D,OAAO,KAAK,EAAE,OAAO,EAAE,MAAM,qBAAqB,CAAA;AAElD;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;IA+NI;AACJ,wBAAgB,cAAc,CAAC,SAAS,SAAS,gBAAgB,EAC/D,EAAE,EAAE,SAAS,EACb,MAAM,EAAE,aAAa,EACrB,KAAK,CAAC,EAAE,OAAO,CAAC,SAAS,CAAC,GACzB,OAAO,CAYT"}
+\ No newline at end of file
+diff --git a/index.js b/index.js
+index f3344e5d308f8b29251f6aa78fa779364da46484..1eaf119315628c35716211328387acb4f7959f8b 100644
+--- a/index.js
++++ b/index.js
+@@ -246,12 +246,12 @@ import { is } from "drizzle-orm";
+  * ---
+  *
+  **/
+-export function DrizzleAdapter(db, table) {
++export function DrizzleAdapter(db, tables, table) {
+     if (is(db, MySqlDatabase)) {
+         return mySqlDrizzleAdapter(db, table);
+     }
+     else if (is(db, PgDatabase)) {
+-        return pgDrizzleAdapter(db, table);
++        return pgDrizzleAdapter(db, table, tables);
+     }
+     else if (is(db, BaseSQLiteDatabase)) {
+         return SQLiteDrizzleAdapter(db, table);
+diff --git a/lib/pg.d.ts b/lib/pg.d.ts
+index 1d434a02c43b7f6448be9da3af95b2828c578848..0cf755c97ea0dc659c802c81248d503fccf0678f 100644
+--- a/lib/pg.d.ts
++++ b/lib/pg.d.ts
+@@ -295,5 +295,5 @@ export declare function createTables(pgTable: PgTableFn): {
+     }>;
+ };
+ export type DefaultSchema = ReturnType<typeof createTables>;
+-export declare function pgDrizzleAdapter(client: InstanceType<typeof PgDatabase>, tableFn?: PgTableFn<undefined>): Adapter;
++export declare function pgDrizzleAdapter(client: InstanceType<typeof PgDatabase>, tableFn?: PgTableFn<undefined>, tables?: DefaultSchema): Adapter;
+ //# sourceMappingURL=pg.d.ts.map
+\ No newline at end of file
+diff --git a/lib/pg.d.ts.map b/lib/pg.d.ts.map
+index 229c820e94fc1eb906eadc4316779656932fafd0..dce0f7cd4106a66fc328671df27696d8d9835294 100644
+--- a/lib/pg.d.ts.map
++++ b/lib/pg.d.ts.map
+@@ -1 +1 @@
+-{"version":3,"file":"pg.d.ts","sourceRoot":"","sources":["../src/lib/pg.ts"],"names":[],"mappings":"AACA,OAAO,EAML,SAAS,EACT,UAAU,EACX,MAAM,qBAAqB,CAAA;AAE5B,OAAO,KAAK,EAAE,OAAO,EAAkB,MAAM,qBAAqB,CAAA;AAElE,wBAAgB,YAAY,CAAC,OAAO,EAAE,SAAS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;EAoD9C;AAED,MAAM,MAAM,aAAa,GAAG,UAAU,CAAC,OAAO,YAAY,CAAC,CAAA;AAE3D,wBAAgB,gBAAgB,CAC9B,MAAM,EAAE,YAAY,CAAC,OAAO,UAAU,CAAC,EACvC,OAAO,uBAAmB,GACzB,OAAO,CAgKT"}
+\ No newline at end of file
++{"version":3,"file":"pg.d.ts","sourceRoot":"","sources":["../src/lib/pg.ts"],"names":[],"mappings":"AACA,OAAO,EAML,SAAS,EACT,UAAU,EACX,MAAM,qBAAqB,CAAA;AAE5B,OAAO,KAAK,EAAE,OAAO,EAAkB,MAAM,qBAAqB,CAAA;AAElE,wBAAgB,YAAY,CAAC,OAAO,EAAE,SAAS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;EAoD9C;AAED,MAAM,MAAM,aAAa,GAAG,UAAU,CAAC,OAAO,YAAY,CAAC,CAAA;AAE3D,wBAAgB,gBAAgB,CAC9B,MAAM,EAAE,YAAY,CAAC,OAAO,UAAU,CAAC,EACvC,OAAO,uBAAmB,EAC1B,MAAM,GAAE,aAAqC,GAC5C,OAAO,CA+JT"}
+\ No newline at end of file
+diff --git a/lib/pg.js b/lib/pg.js
+index f3d333f0ba5ab12c807f507b7b52925a0489b136..5af1c24ae7ebad740ebaa394c680ca906952c56a 100644
+--- a/lib/pg.js
++++ b/lib/pg.js
+@@ -41,8 +41,8 @@ export function createTables(pgTable) {
+     }));
+     return { users, accounts, sessions, verificationTokens };
+ }
+-export function pgDrizzleAdapter(client, tableFn = defaultPgTableFn) {
+-    const { users, accounts, sessions, verificationTokens } = createTables(tableFn);
++export function pgDrizzleAdapter(client, tableFn = defaultPgTableFn, tables = createTables(tableFn)) {
++    const { accounts, users, sessions, verificationTokens } = tables;
+     return {
+         async createUser(data) {
+             return await client
+diff --git a/src/index.ts b/src/index.ts
+index 842f85a48766181dd5e81114796297275bd737b4..119db85c932b33503f705170abfcf13e6bd64c4e 100644
+--- a/src/index.ts
++++ b/src/index.ts
+@@ -20,7 +20,7 @@ import { MySqlDatabase, MySqlTableFn } from "drizzle-orm/mysql-core"
+ import { PgDatabase, PgTableFn } from "drizzle-orm/pg-core"
+ import { BaseSQLiteDatabase, SQLiteTableFn } from "drizzle-orm/sqlite-core"
+ import { mySqlDrizzleAdapter } from "./lib/mysql.js"
+-import { pgDrizzleAdapter } from "./lib/pg.js"
++import { DefaultSchema, pgDrizzleAdapter } from "./lib/pg.js"
+ import { SQLiteDrizzleAdapter } from "./lib/sqlite.js"
+ import { SqlFlavorOptions, TableFn } from "./lib/utils.js"
+ import { is } from "drizzle-orm"
+@@ -253,12 +253,13 @@ import type { Adapter } from "@auth/core/adapters"
+  **/
+ export function DrizzleAdapter<SqlFlavor extends SqlFlavorOptions>(
+   db: SqlFlavor,
++  tables: DefaultSchema,
+   table?: TableFn<SqlFlavor>
+ ): Adapter {
+   if (is(db, MySqlDatabase)) {
+     return mySqlDrizzleAdapter(db, table as MySqlTableFn)
+   } else if (is(db, PgDatabase)) {
+-    return pgDrizzleAdapter(db, table as PgTableFn)
++    return pgDrizzleAdapter(db, table as PgTableFn, tables)
+   } else if (is(db, BaseSQLiteDatabase)) {
+     return SQLiteDrizzleAdapter(db, table as SQLiteTableFn)
+   }
+diff --git a/src/lib/pg.ts b/src/lib/pg.ts
+index ec33d7cf9662e09713c1b719d6c75ec4630ec6b1..c70232d9b58eafec6dd8b576d5a8b720c934e490 100644
+--- a/src/lib/pg.ts
++++ b/src/lib/pg.ts
+@@ -69,10 +69,10 @@ export type DefaultSchema = ReturnType<typeof createTables>
+ 
+ export function pgDrizzleAdapter(
+   client: InstanceType<typeof PgDatabase>,
+-  tableFn = defaultPgTableFn
++  tableFn = defaultPgTableFn,
++  tables: DefaultSchema = createTables(tableFn)
+ ): Adapter {
+-  const { users, accounts, sessions, verificationTokens } =
+-    createTables(tableFn)
++  const { accounts, users, sessions, verificationTokens } = tables
+ 
+   return {
+     async createUser(data) {
