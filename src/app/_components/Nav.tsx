@@ -1,8 +1,10 @@
 "use client";
 
+import { type Session } from "next-auth";
+import { signOut } from "next-auth/react";
 import { useState } from "react";
 
-const Nav = () => {
+const Nav = ({ session }: { session: Session | null }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   return (
     <>
@@ -32,12 +34,21 @@ const Nav = () => {
               {/* <button className="rounded-md p-2 font-semibold hover:bg-black/20">
                 Log In
               </button> */}
-              <a
-                className="rounded-md bg-yellow-400 p-2 font-semibold text-black hover:bg-yellow-300"
-                href={"/signin"}
-              >
-                Sign In
-              </a>
+              {session ? (
+                <button
+                  onClick={() => signOut()}
+                  className="rounded-md bg-yellow-400 p-2 font-semibold text-black hover:bg-yellow-300"
+                >
+                  Sign Out
+                </button>
+              ) : (
+                <a
+                  className="rounded-md bg-yellow-400 p-2 font-semibold text-black hover:bg-yellow-300"
+                  href={"/signin"}
+                >
+                  Sign In
+                </a>
+              )}
 
               <button
                 className="rounded-md p-2 font-semibold hover:bg-black/20 lg:hidden"
