@@ -1,8 +1,8 @@
 "use client";
 
 import { type Session } from "next-auth";
-import { signOut } from "next-auth/react";
 import { useState } from "react";
+import { SignoutDialog } from "../(auth)/comps/SignoutBox";
 
 const Nav = ({ session }: { session: Session | null }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -35,12 +35,7 @@ const Nav = ({ session }: { session: Session | null }) => {
                 Log In
               </button> */}
               {session ? (
-                <button
-                  onClick={() => signOut()}
-                  className="rounded-md bg-yellow-400 p-2 font-semibold text-black hover:bg-yellow-300"
-                >
-                  Sign Out
-                </button>
+                <SignoutDialog />
               ) : (
                 <a
                   className="rounded-md bg-yellow-400 p-2 font-semibold text-black hover:bg-yellow-300"

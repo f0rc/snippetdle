@@ -9,11 +9,10 @@ import {
   dailyChallenge,
   playlist as playlistSchema,
 } from "~/server/db/schema";
-import { eq, ilike, like, or, sql } from "drizzle-orm";
+import { eq, ilike, or, sql } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import type { dailyChallengeType } from "~/trpc/utils";
-import { ArtistAPIType, fakeData } from "./spotify/Artist";
-import { dbType } from "~/server/db";
+import { type ArtistAPIType } from "./spotify/Artist";
 
 export const gameRouter = createTRPCRouter({
   createPlaylist: publicProcedure
@@ -28,6 +27,20 @@ export const gameRouter = createTRPCRouter({
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Invalid playlist url",
+        });
+      }
+
+      // check if playlist exists
+      const playlistExists = await ctx.db
+        .select()
+        .from(playlistSchema)
+        .where(eq(playlistSchema.id, url))
+        .then((res) => res[0]);
+
+      if (playlistExists) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Playlist already exists",
         });
       }
 
@@ -220,11 +233,88 @@ export const gameRouter = createTRPCRouter({
 
     const dailyChallengeRes = dbRes[0];
 
-    if (!dailyChallengeRes) {
-      console.log("[ERROR]: daily challenge not available");
+    if (dailyChallengeRes?.Song) {
       // need to make a new daily challenge
       return {
-        dailyChallenge: null,
+        dailyChallenge: {
+          id: dailyChallengeRes.dailyChallenge.id,
+          date: gameDate,
+          song: {
+            id: dailyChallengeRes.Song.id,
+            preview_url: dailyChallengeRes.Song.preview_url,
+            album_name: dailyChallengeRes.Song.album_name,
+            album_image: dailyChallengeRes.Song.album_image,
+            album_release_date: dailyChallengeRes.Song.album_release_date,
+            artist_name: dailyChallengeRes.Song.artist_name,
+          },
+        } as dailyChallengeType,
+      };
+    }
+
+    // IF DAILY CHALLENGE IS NULL THEN MAKE A NEW ONE
+    if (!dailyChallengeRes) {
+      console.log("Attpemting to create new daily challenge");
+      // create a new daily challenge and return it
+      const randomSong = await ctx.db
+        .select()
+        .from(Song)
+        .where(eq(Song.isChallengeSong, false))
+        .orderBy(sql`RANDOM()`)
+        .limit(1)
+        .then((res) => res[0]);
+
+      if (!randomSong) {
+        console.log("[ERROR]: no songs available");
+        return {
+          dailyChallenge: null,
+        };
+      }
+
+      const newDailyChallenge = await ctx.db
+        .insert(dailyChallenge)
+        .values({
+          createdById: "ADMIN",
+          date: gameDate,
+          songId: randomSong.id,
+        })
+        .returning();
+
+      // update the song to be a challenge song
+      const songUpdate = await ctx.db
+        .update(Song)
+        .set({
+          isChallengeSong: true,
+        })
+        .where(eq(Song.id, randomSong.id))
+        .returning();
+
+      if (!songUpdate[0]) {
+        console.log("[ERROR]: failed to update song");
+        return {
+          dailyChallenge: null,
+        };
+      }
+
+      if (!newDailyChallenge[0]) {
+        console.log("[ERROR]: failed to create daily challenge");
+        return {
+          dailyChallenge: null,
+        };
+      }
+
+      return {
+        dailyChallenge: {
+          id: newDailyChallenge[0].id,
+          date: gameDate,
+          song: {
+            id: randomSong.id,
+            preview_url: randomSong.preview_url,
+            album_name: randomSong.album_name,
+            album_image: randomSong.album_image,
+            album_release_date: randomSong.album_release_date,
+            artist_name: randomSong.artist_name,
+          },
+        } as dailyChallengeType,
       };
     }
 
@@ -234,21 +324,6 @@ export const gameRouter = createTRPCRouter({
         dailyChallenge: null,
       };
     }
-
-    return {
-      dailyChallenge: {
-        id: dailyChallengeRes.dailyChallenge.id,
-        date: gameDate,
-        song: {
-          id: dailyChallengeRes.Song.id,
-          preview_url: dailyChallengeRes.Song.preview_url,
-          album_name: dailyChallengeRes.Song.album_name,
-          album_image: dailyChallengeRes.Song.album_image,
-          album_release_date: dailyChallengeRes.Song.album_release_date,
-          artist_name: dailyChallengeRes.Song.artist_name,
-        },
-      } as dailyChallengeType,
-    };
   }),
 
   createDailyChallenge: publicProcedure
@@ -312,19 +387,25 @@ export const gameRouter = createTRPCRouter({
 
       console.log(getArtistFromDb);
 
+      let artistResult: (typeof artist.$inferSelect)[] = [];
+
       if (getArtistFromDb.length < 5) {
         console.log("==============================searching spotify");
         const res = await searchArtist(input.artistName, token);
 
-        const artistResult = res.artists.items.map((artist) => {
-          const imageUrl =
-            artist.images.length > 0 ? artist.images[0]?.url : "";
+        artistResult = res.artists.items.map((artist) => {
+          const imageUrl: string | null =
+            artist.images.length > 0
+              ? artist.images[0]
+                ? artist.images[0].url
+                : null
+              : null;
           return {
             name: artist.name,
             id: artist.id,
             popularity: artist.popularity,
             imageUrl: imageUrl,
-            genres: artist.genres,
+            genere: artist.genres,
             queryparam: [input.artistName.toLowerCase()],
           };
         });
@@ -341,24 +422,30 @@ export const gameRouter = createTRPCRouter({
             },
           })
           .returning();
-
-        const newList = artistResult.sort((a, b) => {
-          return b.popularity - a.popularity;
-        });
-
-        return {
-          artistResult: newList.slice(0, 5),
-        };
-      } else {
-        // sort by popularity
-        const newList = getArtistFromDb.sort((a, b) => {
-          return b.popularity - a.popularity;
-        });
-
-        return {
-          artistResult: newList.slice(0, 5),
-        };
       }
+
+      const allArtists = [...getArtistFromDb, ...artistResult];
+
+      const uniqueArtists = Array.from(
+        new Map(allArtists.map((item) => [item.name, item])).values(),
+      );
+
+      const newList = uniqueArtists.sort((a, b) => {
+        const distanceA = levenshteinDistance(
+          a.name.toLowerCase(),
+          input.artistName.toLowerCase(),
+        );
+        const distanceB = levenshteinDistance(
+          b.name.toLowerCase(),
+          input.artistName.toLowerCase(),
+        );
+
+        return distanceA - distanceB;
+      });
+
+      return {
+        artistResult: newList.slice(0, 5),
+      };
     }),
 });
 
@@ -385,3 +472,32 @@ async function searchArtist(artistInput: string, apiToken: string) {
 
   return artistSearchResponse;
 }
+
+const levenshteinDistance = (a: string, b: string): number => {
+  if (a.length === 0) return b.length;
+  if (b.length === 0) return a.length;
+
+  const matrix: number[][] = [];
+
+  for (let i = 0; i <= b.length; i++) {
+    matrix[i] = [i];
+  }
+
+  for (let j = 0; j <= a.length; j++) {
+    matrix[0][j] = j;
+  }
+
+  for (let i = 1; i <= b.length; i++) {
+    for (let j = 1; j <= a.length; j++) {
+      if (b.charAt(i - 1) === a.charAt(j - 1)) {
+        matrix[i][j] = matrix[i - 1][j - 1];
+      } else {
+        matrix[i][j] =
+          Math.min(matrix[i - 1][j - 1], matrix[i][j - 1], matrix[i - 1][j]) +
+          1;
+      }
+    }
+  }
+
+  return matrix[b.length][a.length];
+};

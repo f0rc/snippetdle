@@ -142,8 +142,8 @@ export const getSpotifyToken = async ({ db }: { db: dbType }) => {
   if (!spotifyAccessToken) {
     const params = new URLSearchParams();
     params.append("grant_type", "client_credentials");
-    params.append("client_id", env.spotify_client_id);
-    params.append("client_secret", env.spotify_client_secret);
+    params.append("client_id", env.AUTH_SPOTIFY_CLIENT_ID);
+    params.append("client_secret", env.AUTH_SPOTIFY_CLIENT_SECRET);
 
     const res = await fetch("https://accounts.spotify.com/api/token", {
       method: "POST",
