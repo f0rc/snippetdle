@@ -101,14 +101,13 @@ const GameMain = (GameMainProps: GameMainProps) => {
     }
 
     const interval = playIntervals[index];
-    // console.log("interval", interval);
     audioPlayer.current.currentTime = 0;
 
     const playPromise = audioPlayer.current.play();
     const waitPromise = new Promise((resolve) => {
       setTimeoutId(
         setTimeout(() => {
-          resolve(console.log("timeout is complete"));
+          resolve("done");
         }, interval),
       );
     });
@@ -132,7 +131,7 @@ const GameMain = (GameMainProps: GameMainProps) => {
         audioPlayer.current.pause();
         if (timeoutId) {
           clearTimeout(timeoutId);
-          console.log("timeout cleared");
+          // console.log("timeout cleared");
           setTimeoutId(null);
         }
       }
@@ -207,7 +206,7 @@ const GameMain = (GameMainProps: GameMainProps) => {
 
     if (gameInfoLocal) {
       const x = JSON.parse(gameInfoLocal) as GameMainState;
-      if (x.roundInfo.length) {
+      if (x.roundInfo.length && gameInfo.gameDate === x.gameDate) {
         setSongStep(x.songStep);
         setGameInfo(x);
       }
@@ -234,6 +233,15 @@ const GameMain = (GameMainProps: GameMainProps) => {
       }
     });
   };
+
+  const [audioLoaded, setAudioLoaded] = useState(false);
+
+  useEffect(() => {
+    if (audioPlayer.current) {
+      setAudioLoaded(true);
+    }
+  }, [audioPlayer.current]);
+
   return (
     <div className="flex h-full w-screen max-w-xl flex-col items-center justify-center px-4 pt-4 lg:px-0 lg:pt-0">
       <audio
@@ -249,7 +257,14 @@ const GameMain = (GameMainProps: GameMainProps) => {
       />
 
       <div className="flex h-full w-full flex-col items-center justify-center gap-4">
-        <CassettePlayer isPlaying={isPlaying} handlePlay={handlePlay} />
+        <CassettePlayer
+          isPlaying={isPlaying}
+          handlePlay={handlePlay}
+          showPlayButton={audioLoaded}
+          tapeText={gameInfo.roundInfo.map(
+            (round) => round.artistName || "Skip",
+          )}
+        />
 
         {/* PLAYER */}
         <div className="flex w-full flex-col rounded-full lg:max-w-sm">
@@ -277,8 +292,8 @@ const GameMain = (GameMainProps: GameMainProps) => {
         </div>
       </div>
 
-      {loaded && (
-        <div className="flex w-full flex-col items-center gap-2 pb-5 pt-5">
+      {loaded && audioLoaded && (
+        <div className="flex w-full flex-col items-start gap-2 py-5 md:items-center">
           {/* ROUND INFO */}
           <div className="flex w-full flex-row items-center justify-start gap-1 rounded-md pb-4 md:justify-center">
             {gameInfo.roundInfo.map((round) => (
@@ -292,7 +307,7 @@ const GameMain = (GameMainProps: GameMainProps) => {
                       : "bg-red-200"
                 }`}
               >
-                <p>{round.skip ? "Skipped" : round.artistName}</p>
+                <p>{round.skip ? "Skip" : round.artistName}</p>
               </div>
             ))}
           </div>
@@ -304,7 +319,7 @@ const GameMain = (GameMainProps: GameMainProps) => {
           >
             <input
               type="text"
-              className=" w-4/5 rounded-md bg-stone-100 p-2 text-base  text-black lg:text-xl"
+              className="w-4/5 rounded-md bg-stone-100 p-2 text-base  text-black lg:text-xl"
               placeholder="Guess the artist"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
@@ -316,7 +331,20 @@ const GameMain = (GameMainProps: GameMainProps) => {
                   selectAnswer && handleRoundSubmit(false);
                 }}
               >
-                {"->"}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="h-6 w-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"
+                  />
+                </svg>
               </button>
               <button
                 className="rounded-lg bg-blue-600 px-2"

@@ -4,6 +4,8 @@ import GameMain from "../_components/GameMain";
 export default async function Home() {
   const data = await api.game.getDailyChallenge.query();
 
+  console.log("DAILY", data.dailyChallenge);
+
   return (
     <main className="flex flex-row items-center justify-center">
       <div className="flex h-full w-full justify-center">

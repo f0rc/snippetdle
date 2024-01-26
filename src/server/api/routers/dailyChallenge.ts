@@ -229,30 +229,25 @@ export const gameRouter = createTRPCRouter({
       .from(dailyChallenge)
       .where(eq(sql`DATE(${dailyChallenge.date})`, gameDate))
       .leftJoin(Song, eq(dailyChallenge.songId, Song.id))
-      .limit(1);
+      .limit(1)
+      .then((res) => res[0]);
 
-    const dailyChallengeRes = dbRes[0];
-
-    if (dailyChallengeRes?.Song) {
-      // need to make a new daily challenge
+    if (dbRes?.Song) {
       return {
         dailyChallenge: {
-          id: dailyChallengeRes.dailyChallenge.id,
+          id: dbRes.dailyChallenge.id,
           date: gameDate,
           song: {
-            id: dailyChallengeRes.Song.id,
-            preview_url: dailyChallengeRes.Song.preview_url,
-            album_name: dailyChallengeRes.Song.album_name,
-            album_image: dailyChallengeRes.Song.album_image,
-            album_release_date: dailyChallengeRes.Song.album_release_date,
-            artist_name: dailyChallengeRes.Song.artist_name,
+            id: dbRes.Song.id,
+            preview_url: dbRes.Song.preview_url,
+            album_name: dbRes.Song.album_name,
+            album_image: dbRes.Song.album_image,
+            album_release_date: dbRes.Song.album_release_date,
+            artist_name: dbRes.Song.artist_name,
           },
         } as dailyChallengeType,
       };
-    }
-
-    // IF DAILY CHALLENGE IS NULL THEN MAKE A NEW ONE
-    if (!dailyChallengeRes) {
+    } else {
       console.log("Attpemting to create new daily challenge");
       // create a new daily challenge and return it
       const randomSong = await ctx.db
@@ -315,13 +310,6 @@ export const gameRouter = createTRPCRouter({
             artist_name: randomSong.artist_name,
           },
         } as dailyChallengeType,
-      };
-    }
-
-    if (!dailyChallengeRes.Song) {
-      console.log("[ERROR]: song not available");
-      return {
-        dailyChallenge: null,
       };
     }
   }),
