@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import "./thing.css";
+import { DuckTape } from "./DuckTape/DuckTape";
 
 export default function CassettePlayer({
   isPlaying,
@@ -44,10 +45,12 @@ export default function CassettePlayer({
         {/* first row letter + lines */}
         <div className="flex w-full flex-row items-center justify-center gap-2 md:gap-4">
           <div className="bg-black p-2 text-lg font-bold md:p-4 md:text-4xl">
-            S
+            A
           </div>
           <div className="flex h-full w-full flex-col  items-center justify-center gap-y-4">
             {/* make 3 lines  */}
+            <DuckTape index={1} tapeText="DAILY CHALLENGE" />
+            <DuckTape index={0} tapeText="DAILY CHALLENGE" />
             <div className="h-0.5 w-full bg-black"></div>
             <div className="h-0.5 w-full bg-black"></div>
             <div className="h-0.5 w-full bg-black"></div>
@@ -134,7 +137,7 @@ export default function CassettePlayer({
           </p>
 
           <p className="hidden text-xs font-bold uppercase text-white sm:block md:text-xl">
-            EC-30 <span className="text-xs md:text-base">SEC</span>
+            EC-30 <span className="text-xs md:text-base">S</span>
           </p>
         </div>
       </div>
