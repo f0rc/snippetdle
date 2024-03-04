@@ -1,12 +1,25 @@
 "use client";
-import { ChangeEvent, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { api } from "~/trpc/react";
 import { spotifyPlaylistUrlPattern } from "~/utils/spotifyRegex";
 
 function CreateGame() {
+  const router = useRouter();
   const createPlaylist = api.game.createPlaylist.useMutation({
-    onSuccess: () => {
-      console.log("made playlist");
+    onSuccess: (data) => {
+      //TODO: Show toast message
+
+      router.push("/playlist/" + data.playlistId);
+    },
+    onError: (error) => {
+      if (error.message === "Playlist already exists") {
+        setForm({
+          ...form,
+          spotifyUrlError: "Playlist already exists",
+          formState: "error",
+        });
+      }
     },
   });
 
@@ -45,7 +58,7 @@ function CreateGame() {
       return false;
     }
 
-    if (!form.spotifyUrl.includes("open.spotify.com")) {
+    if (!spotifyPlaylistUrlPattern.test(form.spotifyUrl)) {
       setForm({
         ...form,
         spotifyUrlError: "Please enter a valid Spotify URL",
@@ -59,6 +72,17 @@ function CreateGame() {
       setForm({
         ...form,
         playlistNameError: "Playlist name must be between 3 and 20 characters",
+        formState: "error",
+      });
+      return false;
+    }
+
+    // make sure that playlist name does not include numbers or special characters only letters
+    if (!/^[a-zA-Z\s\uD800-\uDFFF]+$/u.test(form.playlistName)) {
+      setForm({
+        ...form,
+        playlistNameError:
+          "Playlist name must only contain letters, spaces, and emojis",
         formState: "error",
       });
       return false;
@@ -87,8 +111,11 @@ function CreateGame() {
 
         <div className="flex w-full flex-col gap-4">
           <div className="flex flex-col gap-2">
+            <p className="text-sm uppercase text-red-500">
+              {form.spotifyUrlError}
+            </p>
             <label htmlFor="spotifyUrl" className="font-semibold uppercase">
-              Spotify URL
+              Spotify Playlist URL
             </label>
             <input
               type="text"
@@ -102,6 +129,9 @@ function CreateGame() {
           </div>
 
           <div className="flex flex-col gap-2">
+            <p className="text-sm uppercase text-red-500">
+              {form.playlistNameError}
+            </p>
             <label htmlFor="spotifyUrl" className="font-semibold uppercase">
               Playlist Name
             </label>
@@ -118,8 +148,6 @@ function CreateGame() {
           </div>
 
           <button onClick={handleSubmit}>Submit</button>
-
-          <pre>{JSON.stringify(form, null, 2)}</pre>
         </div>
       </div>
     </main>

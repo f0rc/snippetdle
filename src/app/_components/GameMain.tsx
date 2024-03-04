@@ -35,14 +35,14 @@ const GameMain = (GameMainProps: GameMainProps) => {
     gameId: "",
     sync: false,
     gameDate: GameMainProps.options.dailyChallenge.date,
-    volume: 30,
+    volume: 10,
     songStep: 0,
     gameOver: false,
     roundInfo: [],
   });
 
   //  MARK: Volume settings
-  const [volume, setVolume] = useState(30);
+  const [volume, setVolume] = useState(10);
   useEffect(() => {
     if (audioPlayer.current) {
       audioPlayer.current.volume = volume / 100;
@@ -261,9 +261,20 @@ const GameMain = (GameMainProps: GameMainProps) => {
           isPlaying={isPlaying}
           handlePlay={handlePlay}
           showPlayButton={audioLoaded}
-          tapeText={gameInfo.roundInfo.map(
-            (round) => round.artistName || "Skip",
-          )}
+          tapeText={
+            gameInfo.roundInfo.length
+              ? gameInfo.roundInfo.map((round) => {
+                  return {
+                    text: round.skip ? "Skip" : round.artistName,
+                    state: round.correct
+                      ? "green"
+                      : round.skip
+                        ? "gray"
+                        : "red",
+                  };
+                })
+              : []
+          }
         />
 
         {/* PLAYER */}
@@ -299,15 +310,17 @@ const GameMain = (GameMainProps: GameMainProps) => {
             {gameInfo.roundInfo.map((round) => (
               <div
                 key={round.songStep}
-                className={`flex flex-row rounded-lg p-2 text-sm text-black ${
+                className={`flex w-14 flex-row truncate rounded-md p-2 text-center font-mono text-xs font-semibold text-black md:w-60 md:text-xl ${
                   round.skip
-                    ? "bg-gray-400"
+                    ? "bg-gray-500"
                     : round.correct
-                      ? "bg-green-200"
-                      : "bg-red-200"
+                      ? "bg-green-500"
+                      : "bg-red-500"
                 }`}
               >
-                <p>{round.skip ? "Skip" : round.artistName}</p>
+                <p className="h-full w-full self-center text-center">
+                  {round.skip ? "Skip" : round.artistName}
+                </p>
               </div>
             ))}
           </div>
@@ -326,7 +339,7 @@ const GameMain = (GameMainProps: GameMainProps) => {
             />
             <div className="flex w-1/5 flex-row gap-2">
               <button
-                className="rounded-lg bg-blue-600 px-4 py-2"
+                className="rounded-lg bg-yellow-400 px-4 py-2 font-semibold text-black"
                 onClick={() => {
                   selectAnswer && handleRoundSubmit(false);
                 }}
@@ -335,7 +348,7 @@ const GameMain = (GameMainProps: GameMainProps) => {
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
-                  strokeWidth={1.5}
+                  strokeWidth={3.5}
                   stroke="currentColor"
                   className="h-6 w-6"
                 >
@@ -347,7 +360,7 @@ const GameMain = (GameMainProps: GameMainProps) => {
                 </svg>
               </button>
               <button
-                className="rounded-lg bg-blue-600 px-2"
+                className="rounded-lg bg-gray-600 px-2 font-semibold"
                 onClick={() => {
                   handleRoundSubmit(true);
                 }}

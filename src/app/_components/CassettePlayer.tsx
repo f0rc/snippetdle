@@ -4,6 +4,11 @@ import { useEffect, useState } from "react";
 import "./thing.css";
 import { DuckTape } from "./DuckTape/DuckTape";
 
+export type tapeText = {
+  text: string;
+  state: "red" | "green" | "gray";
+}
+
 export default function CassettePlayer({
   isPlaying,
   handlePlay,
@@ -13,7 +18,7 @@ export default function CassettePlayer({
   isPlaying: boolean;
   handlePlay: () => void;
   showPlayButton: boolean;
-  tapeText: string[];
+  tapeText: tapeText[];
 }) {
   const [rotation, setRotation] = useState(0);
 
@@ -45,7 +50,7 @@ export default function CassettePlayer({
       <div className="absolute bottom-4 right-4 h-3 w-3 rounded-full bg-white"></div>
       <div className="absolute bottom-4 left-4 h-3 w-3 rounded-full bg-white"></div>
 
-      <div className="flex h-4/5 w-4/5 flex-col rounded-2xl bg-[#495360] p-4 pb-10 md:pb-2">
+      <div className="flex h-4/5 w-4/5 flex-col rounded-2xl bg-[#4b545e] p-4 pb-10 md:pb-2">
         {/* first row letter + lines */}
         <div className="flex w-full flex-row items-center justify-center gap-2 md:gap-4">
           <div className="bg-black p-2 text-lg font-bold md:p-4 md:text-4xl">

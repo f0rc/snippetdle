@@ -2,7 +2,7 @@ services:
   test-db:
     image: postgres
     restart: always
-    container_name: proslusha
+    container_name: snippetdle
     ports:
       - '6666:5432'
     environment:

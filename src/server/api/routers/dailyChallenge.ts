@@ -38,12 +38,8 @@ export const gameRouter = createTRPCRouter({
         .then((res) => res[0]);
 
       if (playlistExists) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Playlist already exists",
-        });
+        return { success: true, playlistId: url };
       }
-
       const token = await getSpotifyToken({ db: ctx.db });
 
       const playlist = await fetch(
@@ -148,7 +144,7 @@ export const gameRouter = createTRPCRouter({
       // now for the songs that don't include a preview url need to use vercel + python + ytdl to get google link and idk how to manage the start time probably use js
       // uploadthing + url
 
-      return { success: true };
+      return { success: true, playlistId: url };
     }),
 
   getGame: publicProcedure
@@ -220,6 +216,11 @@ export const gameRouter = createTRPCRouter({
       };
     }),
 
+  /* 
+      try to get a daily challenge from db which has a song and info about the song. 
+
+      uses the current date to get the daily challenge. if it doesn't exist, create a new one and return it
+    */
   getDailyChallenge: publicProcedure.query(async ({ ctx }) => {
     // TODO TEST IF THIS ACTUALLY WORKS
     const gameDate = new Date().toLocaleDateString("en-US");

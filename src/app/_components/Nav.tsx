@@ -38,7 +38,7 @@ const Nav = ({ session }: { session: Session | null }) => {
                 <SignoutDialog />
               ) : (
                 <a
-                  className="rounded-md bg-yellow-400 p-2 font-semibold text-black hover:bg-yellow-300"
+                  className="rounded-md bg-yellow-400 flex items-center font-semibold text-black hover:bg-yellow-300 text-center p-2"
                   href={"/signin"}
                 >
                   Sign In
