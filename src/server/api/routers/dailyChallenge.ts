@@ -42,14 +42,31 @@ export const gameRouter = createTRPCRouter({
       }
       const token = await getSpotifyToken({ db: ctx.db });
 
-      const playlist = await fetch(
+      const getPlaylistFromSpotify: unknown = await fetch(
         `https://api.spotify.com/v1/playlists/${url}`,
         {
           headers: {
             Authorization: "Bearer " + token,
           },
         },
-      ).then((res) => res.json() as Promise<SpotifyResponse>);
+      )
+        .then((res) => res.json())
+        .catch((e) => {
+          console.log(e);
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Failed to fetch playlist from spotify",
+          });
+        });
+
+      const playlist = getPlaylistFromSpotify as SpotifyResponse;
+      if (playlist.hasOwnProperty("error")) {
+        console.log("Playlist not found types dont match");
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Playlist not found",
+        });
+      }
 
       if (!playlist) {
         throw new TRPCError({

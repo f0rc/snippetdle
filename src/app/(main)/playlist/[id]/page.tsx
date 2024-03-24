@@ -1,34 +1,36 @@
-import Image from "next/image";
+import Link from "next/link";
 import { api } from "~/trpc/server";
+import PlaylistList from "./PlaylistList";
 
 export default async function Page({ params }: { params: { id: string } }) {
   const playlistData = await api.playlist.getPlaylist.query({ id: params.id });
 
   return (
-    <div className="flex flex-col items-center justify-center ">
-      <div className="rounded-md bg-neutral-800 p-4 ">
-        <h1 className="text-2xl font-semibold text-white self-center text-center p-4">
-          {playlistData.playlistName}
-        </h1>
+    <div className="flex w-full items-center justify-center self-center">
+      <div className="flex w-full max-w-4xl flex-col items-center  justify-center">
+        <div className="flex w-full flex-col rounded-md bg-neutral-800">
+          <div className="flex items-center justify-between rounded-t-md bg-neutral-900 p-4 md:p-10">
+            <div>
+              <h1 className="text-start text-2xl font-semibold text-white">
+                {playlistData.playlistName}
+              </h1>
+              <p className="text-start font-semibold">
+                has {playlistData.songs.length} songs
+              </p>
+            </div>
 
-        <ul className="flex flex-col items-center justify-center ">
-          {playlistData.songs.map((song) => (
-            <li key={song.id} className="flex flex-row items-center gap-4 p-4 rounded-md hover:bg-neutral-700">
-              <Image
-                width={100}
-                height={100}
-                src={song.album_image}
-                alt={song.album_name}
-              />
-              <div className=" flex flex-col gap-1">
-                <p className="text-xl">{song.album_name}</p>
+            <div>
+              <Link
+                className="self-center rounded-md bg-yellow-400 p-4 px-6 text-center font-semibold text-black transition-colors duration-300 ease-in-out hover:bg-yellow-500"
+                href={"/"}
+              >
+                Play
+              </Link>
+            </div>
+          </div>
 
-                <p className="text-xl">{song.artist_name}</p>
-                <p className="text-sm italic">{song.album_release_date}</p>
-              </div>
-            </li>
-          ))}
-        </ul>
+          <PlaylistList songs={playlistData.songs} />
+        </div>
       </div>
     </div>
   );

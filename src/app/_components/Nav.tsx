@@ -20,7 +20,7 @@ const Nav = ({ session }: { session: Session | null }) => {
             <ul className="flex-1" />
             <ul className="flex gap-4">
               <li className="hidden items-center justify-end rounded-md p-2 hover:bg-black/20 lg:flex">
-                <a href="/" className="text-xl font-semibold">
+                <a href="/newgame" className="text-xl font-semibold">
                   Custom Games
                 </a>
               </li>
@@ -38,7 +38,7 @@ const Nav = ({ session }: { session: Session | null }) => {
                 <SignoutDialog />
               ) : (
                 <a
-                  className="rounded-md bg-yellow-400 flex items-center font-semibold text-black hover:bg-yellow-300 text-center p-2"
+                  className="flex items-center rounded-md bg-yellow-400 p-2 text-center font-semibold text-black hover:bg-yellow-300"
                   href={"/signin"}
                 >
                   Sign In

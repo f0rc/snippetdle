@@ -61,3 +61,14 @@ export const playlistRouter = createTRPCRouter({
       };
     }),
 });
+
+export type getPlaylistSongstype = {
+  id: string;
+  album_image: string;
+  album_name: string;
+  album_release_date: string;
+  artist_name: string;
+  createdAt: Date;
+  isChallengeSong: boolean | null;
+  preview_url: string;
+};

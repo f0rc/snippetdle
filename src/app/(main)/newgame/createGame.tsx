@@ -6,10 +6,9 @@ import { spotifyPlaylistUrlPattern } from "~/utils/spotifyRegex";
 
 function CreateGame() {
   const router = useRouter();
+  // const { toast } = useToast(); TODO add toast
   const createPlaylist = api.game.createPlaylist.useMutation({
     onSuccess: (data) => {
-      //TODO: Show toast message
-
       router.push("/playlist/" + data.playlistId);
     },
     onError: (error) => {
@@ -17,6 +16,14 @@ function CreateGame() {
         setForm({
           ...form,
           spotifyUrlError: "Playlist already exists",
+          formState: "error",
+        });
+      }
+
+      if (error.message === "Playlist not found") {
+        setForm({
+          ...form,
+          spotifyUrlError: "Playlist not found or is private",
           formState: "error",
         });
       }
@@ -147,7 +154,16 @@ function CreateGame() {
             />
           </div>
 
-          <button onClick={handleSubmit}>Submit</button>
+          <button
+            onClick={handleSubmit}
+            className="rounded-md bg-neutral-600 px-4 py-2 font-semibold uppercase text-white transition-colors duration-300 ease-in-out hover:bg-neutral-700"
+          >
+            Submit
+          </button>
+
+          <p className="self-center text-sm text-neutral-300">
+            Note: some songs may not get added from the playlist.
+          </p>
         </div>
       </div>
     </main>
