@@ -18,12 +18,16 @@ function CreateGame() {
           spotifyUrlError: "Playlist already exists",
           formState: "error",
         });
-      }
-
-      if (error.message === "Playlist not found") {
+      } else if (error.message === "Playlist not found") {
         setForm({
           ...form,
           spotifyUrlError: "Playlist not found or is private",
+          formState: "error",
+        });
+      } else {
+        setForm({
+          ...form,
+          spotifyUrlError: "Something went wrong",
           formState: "error",
         });
       }

@@ -2,8 +2,12 @@ import { TRPCError } from "@trpc/server";
 import { eq, sql } from "drizzle-orm";
 import { z } from "zod";
 
-import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
-import { Song, playlist } from "~/server/db/schema";
+import {
+  createTRPCRouter,
+  protectedProcedure,
+  publicProcedure,
+} from "~/server/api/trpc";
+import { Song, playlist, users } from "~/server/db/schema";
 
 export const playlistRouter = createTRPCRouter({
   getPlaylist: protectedProcedure
@@ -12,6 +16,14 @@ export const playlistRouter = createTRPCRouter({
       const playlistInfo = await ctx.db.query.playlist.findFirst({
         where: eq(playlist.id, input.id),
       });
+
+      const playlistMeta = await ctx.db
+        .select()
+        .from(playlist)
+        .where(sql`${playlist.id} = ${input.id}`)
+        .leftJoin(users, sql`${playlist.createdById} = ${users.id}`);
+
+      console.log(playlistMeta);
 
       if (!playlistInfo) {
         throw new TRPCError({
@@ -57,8 +69,33 @@ export const playlistRouter = createTRPCRouter({
       return {
         playlistId: playlistInfo.id,
         playlistName: playlistInfo.name,
+        playlistImage: playlistInfo.playlistImage,
+        playlistDescription: playlistInfo.playlistDescription,
+        playlistAuthor: ctx.session.user?.name,
         songs: playlistSongs,
       };
+    }),
+
+  getPlaylistList: publicProcedure
+    .input(
+      z.object({
+        offset: z.number().default(0),
+        sortType: z
+          .enum(["newest", "oldest", "mostPlayed", "leastPlayed", "mostLiked"])
+          .default("newest"),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      // TODO: Implement sorting
+
+      const playlists = await ctx.db.query.playlist.findMany({
+        orderBy: (playlist, { desc }) => [desc(playlist.createdAt)],
+
+        limit: 10,
+        offset: input.offset,
+      });
+
+      return playlists;
     }),
 });
 

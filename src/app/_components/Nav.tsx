@@ -26,7 +26,7 @@ const Nav = ({ session }: { session: Session | null }) => {
               </li>
 
               <li className="hidden items-center justify-end rounded-md p-2 hover:bg-black/20 lg:flex">
-                <a href="/" className="text-xl font-semibold">
+                <a href="/browseplaylists" className="text-xl font-semibold">
                   Browse Playlists
                 </a>
               </li>

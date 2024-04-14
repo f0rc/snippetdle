@@ -29,7 +29,18 @@ import { db } from "~/server/db";
 export const createTRPCContext = async (opts: { headers: Headers }) => {
   const session = await getServerAuthSession();
 
+  const forwardedFor = opts.headers.get("x-forwarded-for");
+  const remoteAddress =
+    forwardedFor ?? opts.headers.get("x-real-ip") ?? "no-ip";
+  const ip = remoteAddress.split(",")[0];
+
+  const userAgent = opts.headers.get("user-agent") ?? "no-user-agent";
+
   return {
+    requestMeta: {
+      ip,
+      userAgent,
+    },
     db,
     session,
     ...opts,

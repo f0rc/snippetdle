@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 
 import { TRPCReactProvider } from "~/trpc/react";
 import { Toaster } from "~/components/ui/toaster";
+import { GameMetaProvider } from "./_components/State/useGameInfo";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -27,7 +28,7 @@ export default function RootLayout({
       <body className={`font-mono ${inter.variable}`}>
         <TRPCReactProvider cookies={cookies().toString()}>
           <Toaster />
-          {children}
+          <GameMetaProvider>{children}</GameMetaProvider>
         </TRPCReactProvider>
       </body>
     </html>

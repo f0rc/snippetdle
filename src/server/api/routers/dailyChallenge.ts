@@ -1,5 +1,9 @@
 import { z } from "zod";
-import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import {
+  createTRPCRouter,
+  publicProcedure,
+  protectedProcedure,
+} from "~/server/api/trpc";
 import { getSpotifyToken, type SpotifyResponse } from "./spotify/utils";
 
 import {
@@ -15,7 +19,7 @@ import type { dailyChallengeType } from "~/trpc/utils";
 import { type ArtistAPIType } from "./spotify/Artist";
 
 export const gameRouter = createTRPCRouter({
-  createPlaylist: publicProcedure
+  createPlaylist: protectedProcedure
     .input(
       z.object({ spotifyPlaylistUrl: z.string(), playlistName: z.string() }),
     )
@@ -42,6 +46,13 @@ export const gameRouter = createTRPCRouter({
       }
       const token = await getSpotifyToken({ db: ctx.db });
 
+      if (!token) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Spotify Error",
+        });
+      }
+
       const getPlaylistFromSpotify: unknown = await fetch(
         `https://api.spotify.com/v1/playlists/${url}`,
         {
@@ -59,19 +70,24 @@ export const gameRouter = createTRPCRouter({
           });
         });
 
+      console.log("got playlist from spotify", url);
+
       const playlist = getPlaylistFromSpotify as SpotifyResponse;
+
+      if (!playlist) {
+        await ctx.db.delete(playlistSchema).where(eq(playlistSchema.id, url));
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Failed to playlist from spotify",
+        });
+      }
+
       if (playlist.hasOwnProperty("error")) {
+        await ctx.db.delete(playlistSchema).where(eq(playlistSchema.id, url));
         console.log("Playlist not found types dont match");
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Playlist not found",
-        });
-      }
-
-      if (!playlist) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Failed to playlist from spotify",
         });
       }
 
@@ -80,7 +96,9 @@ export const gameRouter = createTRPCRouter({
         .values({
           id: url,
           name: input.playlistName,
-          createdById: "ADMIN",
+          playlistImage: playlist.images[0]?.url ?? "",
+          playlistDescription: playlist.description ?? "",
+          createdById: ctx.session.user.id,
         })
         .onConflictDoUpdate({
           target: playlistSchema.id,
@@ -91,7 +109,7 @@ export const gameRouter = createTRPCRouter({
         })
         .returning()
         .catch((e) => {
-          console.log(e);
+          console.log("UNABLE TO PUT INTO DB", e);
           throw new TRPCError({
             code: "BAD_REQUEST",
             message: "Playlist already exists",
@@ -99,11 +117,14 @@ export const gameRouter = createTRPCRouter({
         });
 
       if (!playListDb[0]) {
+        await ctx.db.delete(playlistSchema).where(eq(playlistSchema.id, url));
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Failed to create playlist",
         });
       }
+
+      console.log("PLAYLIST DB", playlist.tracks.items);
 
       const songDataList = [];
 
@@ -123,6 +144,17 @@ export const gameRouter = createTRPCRouter({
 
           songDataList.push(songData);
         }
+      }
+
+      if (!songDataList || songDataList.length === 0) {
+        // delete the playlist from the db
+        await ctx.db.delete(playlistSchema).where(eq(playlistSchema.id, url));
+
+        console.log("NO SONGS WITH PREVIEW URL");
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Unfortunate Situation",
+        });
       }
 
       await ctx.db
@@ -391,8 +423,6 @@ export const gameRouter = createTRPCRouter({
           ),
         );
 
-      console.log(getArtistFromDb);
-
       let artistResult: (typeof artist.$inferSelect)[] = [];
 
       if (getArtistFromDb.length < 5) {
@@ -432,9 +462,28 @@ export const gameRouter = createTRPCRouter({
 
       const allArtists = [...getArtistFromDb, ...artistResult];
 
+      // TOOD: make it so that it would pick the most popular artist
       const uniqueArtists = Array.from(
-        new Map(allArtists.map((item) => [item.name, item])).values(),
+        new Map(
+          allArtists
+            .sort((a, b) => {
+              if (a.popularity !== b.popularity) {
+                return b.popularity - a.popularity;
+              } else {
+                if (a.imageUrl && !b.imageUrl) {
+                  return -1;
+                } else if (!a.imageUrl && b.imageUrl) {
+                  return 1;
+                } else {
+                  return 0;
+                }
+              }
+            })
+            .map((item) => [item.name, item]),
+        ).values(),
       );
+
+      console.log("UNIQUE ARTISTS", uniqueArtists);
 
       const newList = uniqueArtists.sort((a, b) => {
         const distanceA = levenshteinDistance(
@@ -450,7 +499,7 @@ export const gameRouter = createTRPCRouter({
       });
 
       return {
-        artistResult: newList.slice(0, 5),
+        artistResult: uniqueArtists.slice(0, 5),
       };
     }),
 });

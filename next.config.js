@@ -13,6 +13,11 @@ const config = {
         hostname: "i.scdn.co",
         pathname: "/**/*",
       },
+      {
+        protocol: "https",
+        "hostname": "mosaic.scdn.co",
+        "pathname": "/**/*",
+      }
     ],
   },
 };

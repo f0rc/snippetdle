@@ -145,6 +145,8 @@ export const Song = pgTable(
 export const playlist = pgTable("playlist", {
   id: text("id").primaryKey(),
   name: varchar("name").notNull(),
+  playlistImage: text("playlistImage"),
+  playlistDescription: text("playlistDescription"),
   createdById: varchar("createdById").notNull(),
   createdAt: timestamp("created_at")
     .default(sql`CURRENT_TIMESTAMP`)
@@ -191,5 +193,42 @@ export const artist = pgTable(
   },
   (t) => ({
     artistIdx: index("artistIdx").on(t.name),
+  }),
+);
+
+export const game = pgTable(
+  "game",
+  {
+    id: serial("id").primaryKey(),
+    userIp: text("userIp").notNull(),
+    userAgent: text("userAgent").notNull(),
+    dailyChallenge: boolean("dailyChallenge").default(false).notNull(),
+    attempts: integer("attempts").default(0).notNull(),
+    createdById: varchar("createdById", { length: 255 }),
+    createdAt: timestamp("created_at")
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    updatedAt: timestamp("updatedAt"),
+  },
+  (example) => ({
+    createdByIdIdx: index("game_createdById_idx").on(example.createdById),
+  }),
+);
+
+export const gameAttempts = pgTable(
+  "game_attempts",
+  {
+    id: serial("id").primaryKey(),
+    gameId: integer("gameId").references(() => game.id, {
+      onDelete: "cascade",
+    }),
+    attemptNumber: integer("attemptNumber").notNull(),
+    userInput: text("userInput").notNull(),
+    createdAt: timestamp("created_at")
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+  },
+  (example) => ({
+    gameIdIdx: index("gameId_idx").on(example.gameId),
   }),
 );

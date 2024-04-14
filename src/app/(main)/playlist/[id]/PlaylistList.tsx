@@ -35,11 +35,10 @@ const PlaylistList = ({ songs }: { songs: getPlaylistSongstype[] }) => {
         <button
           onClick={() => {
             setShowSongs((prev) => !prev);
-            console.log("clicked");
           }}
           className="rounded-md bg-neutral-600 px-4 py-6 font-semibold uppercase text-white transition-colors duration-300 ease-in-out hover:bg-neutral-700"
         >
-          Show Songs
+          ***SPOILERS*** Show Songs
         </button>
       )}
     </>

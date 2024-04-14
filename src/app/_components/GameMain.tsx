@@ -5,6 +5,10 @@ import { useState, useRef, useEffect, Suspense } from "react";
 import { api } from "~/trpc/react";
 import type { dailyChallengeType } from "~/trpc/utils";
 import CassettePlayer from "./CassettePlayer";
+import { useGameInfo } from "./State/useGameInfo";
+import { getScoreEmojis } from "./utils/getEmoji";
+import { getAudioDuration } from "./utils/getTimeDuration";
+import ArtistSearch from "./ArtistSearch";
 
 type GameMainProps = {
   options: {
@@ -12,34 +16,17 @@ type GameMainProps = {
   };
 };
 
-interface roundInfoType {
-  songStep: number;
-  artistName: string;
-  correct: boolean;
-  skip: boolean;
-}
-
-type GameMainState = {
-  gameId: string;
-  sync: boolean;
-  gameDate: string;
-  volume: number;
-  songStep: number;
-  gameOver: boolean;
-  roundInfo: roundInfoType[];
-};
-
 const GameMain = (GameMainProps: GameMainProps) => {
+  const {
+    gameInfo,
+    playIntervals,
+    setGameInfo,
+    selectAnswer,
+    setSelectAnswer,
+    loaded,
+  } = useGameInfo();
+
   const audioPlayer = useRef<HTMLAudioElement>(null);
-  const [gameInfo, setGameInfo] = useState<GameMainState>({
-    gameId: "",
-    sync: false,
-    gameDate: GameMainProps.options.dailyChallenge.date,
-    volume: 10,
-    songStep: 0,
-    gameOver: false,
-    roundInfo: [],
-  });
 
   //  MARK: Volume settings
   const [volume, setVolume] = useState(10);
@@ -52,13 +39,11 @@ const GameMain = (GameMainProps: GameMainProps) => {
   }, [volume]);
   // MARK: *Volume settings end
 
-  const [songStep, setSongStep] = useState(0);
-
-  const playIntervals = [1000, 2000, 3000, 5000, 7000, 10000];
+  const { mutate } = api.user.createGame.useMutation();
 
   const handleRoundSubmit = (skip: boolean) => {
     const newRoundInfo = {
-      songStep: songStep,
+      songStep: gameInfo.songStep,
       artistName: selectAnswer,
       correct:
         selectAnswer ===
@@ -69,19 +54,25 @@ const GameMain = (GameMainProps: GameMainProps) => {
     if (gameInfo.roundInfo.length <= 5 && !gameInfo.gameOver) {
       const updatedRouned = [...gameInfo.roundInfo];
       updatedRouned.push(newRoundInfo);
-      setGameInfo((p) => ({ ...p, roundInfo: updatedRouned }));
+      setGameInfo((prev) => ({ ...prev, roundInfo: updatedRouned }));
       // check if won else move to next round
       if (newRoundInfo.correct) {
         setGameInfo((p) => ({ ...p, gameOver: true }));
       } else {
-        setSongStep((prev) => prev + 1);
         setGameInfo((p) => ({ ...p, songStep: p.songStep + 1 }));
       }
 
-      setInputValue("");
       setSelectAnswer("");
     } else {
       setGameInfo((p) => ({ ...p, gameOver: true }));
+    }
+
+    if (!gameInfo.gameId) {
+      mutate({
+        dailyChallenege: true,
+      });
+    } else {
+      // post game attempts
     }
   };
 
@@ -121,9 +112,13 @@ const GameMain = (GameMainProps: GameMainProps) => {
   };
   // logic to play audio
   const handlePlay = async () => {
-    if (!isPlaying && songStep < playIntervals.length && !gameInfo.gameOver) {
-      if (songStep <= 5) {
-        await playAudio(songStep);
+    if (
+      !isPlaying &&
+      gameInfo.songStep < playIntervals.length &&
+      !gameInfo.gameOver
+    ) {
+      if (gameInfo.songStep <= 5) {
+        await playAudio(gameInfo.songStep);
       }
     } else if (isPlaying) {
       if (audioPlayer.current) {
@@ -140,98 +135,6 @@ const GameMain = (GameMainProps: GameMainProps) => {
       audioPlayer.current && (await audioPlayer.current.play());
       setIsPlaying(true);
     }
-  };
-  // MARK: *play audio end
-
-  // MARK: fetch artist data
-  const [inputValue, setInputValue] = useState("");
-  const [debouncedInputValue, setDebouncedInputValue] = useState("");
-
-  const [selectAnswer, setSelectAnswer] = useState("");
-
-  // debounce input useeffect
-  useEffect(() => {
-    const delayInputTimeoutId = setTimeout(() => {
-      if (inputValue !== selectAnswer) {
-        setDebouncedInputValue(inputValue);
-      }
-    }, 1000);
-
-    return () => clearTimeout(delayInputTimeoutId);
-  }, [inputValue, 1000]);
-
-  // api call for artist search
-  const artistSearch = api.game.getArtist.useQuery(
-    { artistName: debouncedInputValue },
-    {
-      enabled:
-        debouncedInputValue.length > 2 &&
-        selectAnswer !== debouncedInputValue &&
-        !gameInfo.gameOver,
-    },
-  );
-  // MARK: *fetch artist data end
-
-  useEffect(() => {
-    if (songStep >= 6) {
-      setGameInfo((p) => ({ ...p, gameOver: true }));
-    }
-  }, [songStep]);
-
-  // MARK: game cache logic
-
-  // useeffect to color in the rounds
-  useEffect(() => {
-    if (gameInfo.roundInfo.length) {
-      gameInfo.roundInfo.forEach((round) => {
-        const roundElement = document.getElementById(round.songStep + "round");
-        if (roundElement) {
-          if (round.correct) {
-            roundElement.style.backgroundColor = "#3BB143";
-          } else if (round.skip) {
-            roundElement.style.backgroundColor = "#808080";
-          } else {
-            roundElement.style.backgroundColor = "#FF0000";
-          }
-        }
-      });
-    }
-  }, [gameInfo.roundInfo]);
-
-  const [loaded, setLoaded] = useState(false);
-
-  // load from local storage on mount
-  useEffect(() => {
-    const gameInfoLocal = localStorage.getItem("gameInfo");
-
-    if (gameInfoLocal) {
-      const x = JSON.parse(gameInfoLocal) as GameMainState;
-      if (x.roundInfo.length && gameInfo.gameDate === x.gameDate) {
-        setSongStep(x.songStep);
-        setGameInfo(x);
-      }
-    }
-
-    setLoaded(true);
-  }, []);
-
-  // save to local storage on roundInfo change
-  useEffect(() => {
-    if (gameInfo.roundInfo.length) {
-      localStorage.setItem("gameInfo", JSON.stringify(gameInfo));
-    }
-  }, [gameInfo]);
-
-  const getScoreEmojis = (roundInfo: roundInfoType[]) => {
-    return roundInfo.map((round) => {
-      if (round.skip) {
-        return "⬜"; // Gray square for skipped
-      } else if (round.correct) {
-        return "✅"; // Green checkmark for correct
-      } else {
-        return "❌"; // Red X for incorrect
-      }
-    });
   };
 
   const [audioLoaded, setAudioLoaded] = useState(false);
@@ -303,41 +206,38 @@ const GameMain = (GameMainProps: GameMainProps) => {
         </div>
       </div>
 
-      {loaded && audioLoaded && (
-        <div className="flex w-full flex-col items-start gap-2 py-5 md:items-center">
-          {/* ROUND INFO */}
-          <div className="flex w-full flex-row items-center justify-start gap-1 rounded-md pb-4 md:justify-center">
-            {gameInfo.roundInfo.map((round) => (
-              <div
-                key={round.songStep}
-                className={`flex w-14 flex-row truncate rounded-md p-2 text-center font-mono text-xs font-semibold text-black md:w-60 md:text-xl ${
-                  round.skip
-                    ? "bg-gray-500"
-                    : round.correct
-                      ? "bg-green-500"
-                      : "bg-red-500"
-                }`}
-              >
-                <p className="h-full w-full self-center text-center">
-                  {round.skip ? "Skip" : round.artistName}
-                </p>
-              </div>
-            ))}
-          </div>
-          {/* INPUT */}
+      <div className="flex w-full flex-row items-center justify-start gap-1 rounded-md pb-4 md:justify-center">
+        {gameInfo.roundInfo.map((round) => (
           <div
-            className={`flex w-4/5 flex-row justify-center gap-2 ${
+            key={round.songStep}
+            className={`flex w-14 flex-row truncate rounded-md p-2 text-center font-mono text-xs font-semibold text-black md:w-60 md:text-xl ${
+              round.skip
+                ? "bg-gray-500"
+                : round.correct
+                  ? "bg-green-500"
+                  : "bg-red-500"
+            }`}
+          >
+            <p className="h-full w-full self-center text-center">
+              {round.skip ? "Skip" : round.artistName}
+            </p>
+          </div>
+        ))}
+      </div>
+
+      {loaded && audioLoaded && (
+        <div className="flex w-full items-start">
+          {/* ROUND INFO */}
+
+          {/* INPUT */}
+
+          <div
+            className={`flex w-full flex-row justify-center gap-2 ${
               gameInfo.gameOver ? " hidden" : ""
             }`}
           >
-            <input
-              type="text"
-              className="w-4/5 rounded-md bg-stone-100 p-2 text-base  text-black lg:text-xl"
-              placeholder="Guess the artist"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-            />
-            <div className="flex w-1/5 flex-row gap-2">
+            <ArtistSearch />
+            <div className="flex h-12 w-1/5 flex-row gap-2">
               <button
                 className="rounded-lg bg-yellow-400 px-4 py-2 font-semibold text-black"
                 onClick={() => {
@@ -423,36 +323,6 @@ const GameMain = (GameMainProps: GameMainProps) => {
             </div>
           </div>
           {/* Search results */}
-          <div
-            className={`flex w-4/5 flex-col gap-1 rounded-md ${
-              gameInfo.gameOver ? " hidden " : ""
-            }`}
-          >
-            {artistSearch.isLoading && artistSearch.fetchStatus !== "idle" ? (
-              <div className="rounded-sm border-b border-black bg-stone-100 p-2 text-sm text-black hover:bg-stone-200 lg:text-xl">
-                loading...
-              </div>
-            ) : artistSearch.error ? (
-              <div className="rounded-sm border-b border-black bg-stone-100 p-2 text-sm text-black hover:bg-stone-200 lg:text-xl">
-                error
-              </div>
-            ) : artistSearch.data && inputValue ? (
-              artistSearch.data.artistResult.map((artist) => (
-                <button
-                  key={artist.id}
-                  onClick={() => {
-                    setSelectAnswer(artist.name);
-                    setInputValue(artist.name);
-                  }}
-                  className="w-4/5 rounded-sm border-b border-black bg-stone-100 p-2 text-sm text-black ring-blue-600 selection:z-10 selection:ring-2 hover:bg-stone-200 focus:bg-stone-200 focus:ring-4 focus:ring-blue-500 lg:text-xl"
-                >
-                  {artist.name}
-                </button>
-              ))
-            ) : (
-              <div></div>
-            )}
-          </div>
         </div>
       )}
     </div>
@@ -460,22 +330,3 @@ const GameMain = (GameMainProps: GameMainProps) => {
 };
 
 export default GameMain;
-
-function getAudioDuration(audioElement: HTMLAudioElement) {
-  const duration = audioElement.duration;
-  const currentTime = audioElement.currentTime;
-  const timeLeft = duration - currentTime;
-
-  const formatTime = (time: number) => {
-    const minutes = Math.round(time / 60);
-    const seconds = Math.round(time % 60);
-
-    return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
-  };
-
-  return {
-    duration: formatTime(duration),
-    currentTime: formatTime(currentTime),
-    timeLeft: formatTime(timeLeft),
-  };
-}
