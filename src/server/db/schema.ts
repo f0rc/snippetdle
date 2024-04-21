@@ -1,4 +1,4 @@
-import { type InferSelectModel, relations, sql } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import {
   boolean,
   index,
@@ -185,7 +185,7 @@ export const artist = pgTable(
   "artist",
   {
     id: text("id").primaryKey(),
-    name: varchar("name", { length: 100 }).notNull(),
+    name: varchar("name").notNull(),
     popularity: integer("popularity").notNull().default(0),
     imageUrl: text("imageUrl"),
     genere: text("genere").array(),
@@ -199,15 +199,18 @@ export const artist = pgTable(
 export const game = pgTable(
   "game",
   {
-    id: serial("id").primaryKey(),
+    id: uuid("id").defaultRandom().primaryKey(),
     userIp: text("userIp").notNull(),
     userAgent: text("userAgent").notNull(),
     dailyChallenge: boolean("dailyChallenge").default(false).notNull(),
-    attempts: integer("attempts").default(0).notNull(),
-    createdById: varchar("createdById", { length: 255 }),
+    playlistId: text("playlistId").notNull(),
+    songsPlayed: uuid("songPlayed").array().notNull(),
+
+    createdById: text("createdById").references(() => users.id),
     createdAt: timestamp("created_at")
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
+
     updatedAt: timestamp("updatedAt"),
   },
   (example) => ({
@@ -215,20 +218,26 @@ export const game = pgTable(
   }),
 );
 
-export const gameAttempts = pgTable(
-  "game_attempts",
-  {
-    id: serial("id").primaryKey(),
-    gameId: integer("gameId").references(() => game.id, {
+export const roundInfo = pgTable("round_info", {
+  id: uuid("id").defaultRandom().primaryKey(),
+
+  gameId: uuid("gameId")
+    .references(() => game.id, {
       onDelete: "cascade",
-    }),
-    attemptNumber: integer("attemptNumber").notNull(),
-    userInput: text("userInput").notNull(),
-    createdAt: timestamp("created_at")
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
-  },
-  (example) => ({
-    gameIdIdx: index("gameId_idx").on(example.gameId),
-  }),
-);
+    })
+    .notNull(),
+
+  isOver: boolean("isOver").default(false),
+
+  songId: uuid("game_songId")
+    .references(() => Song.id)
+    .notNull(),
+
+  attempts: integer("attempts").notNull(),
+  guess: text("guess").array(),
+
+  createdById: text("createdById").references(() => users.id),
+  createdAt: timestamp("created_at")
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+});

@@ -10,7 +10,7 @@ import {
 import { Song, playlist, users } from "~/server/db/schema";
 
 export const playlistRouter = createTRPCRouter({
-  getPlaylist: protectedProcedure
+  getPlaylist: publicProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ input, ctx }) => {
       const playlistInfo = await ctx.db.query.playlist.findFirst({
@@ -71,7 +71,6 @@ export const playlistRouter = createTRPCRouter({
         playlistName: playlistInfo.name,
         playlistImage: playlistInfo.playlistImage,
         playlistDescription: playlistInfo.playlistDescription,
-        playlistAuthor: ctx.session.user?.name,
         songs: playlistSongs,
       };
     }),

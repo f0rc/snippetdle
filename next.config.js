@@ -17,6 +17,9 @@ const config = {
         protocol: "https",
         "hostname": "mosaic.scdn.co",
         "pathname": "/**/*",
+      },
+      {
+        hostname: "seeded-session-images.scdn.co"
       }
     ],
   },

@@ -7,18 +7,20 @@ import { DuckTape } from "./DuckTape/DuckTape";
 export type tapeText = {
   text: string;
   state: "red" | "green" | "gray";
-}
+};
 
 export default function CassettePlayer({
   isPlaying,
   handlePlay,
   showPlayButton,
   tapeText,
+  dailyChallenge,
 }: {
   isPlaying: boolean;
   handlePlay: () => void;
   showPlayButton: boolean;
   tapeText: tapeText[];
+  dailyChallenge: boolean;
 }) {
   const [rotation, setRotation] = useState(0);
 
@@ -170,7 +172,7 @@ export default function CassettePlayer({
         {/* random text */}
         <div className=" flex flex-row justify-between ">
           <p className="hidden text-xs font-bold uppercase text-white sm:block md:text-xl">
-            Daily Challenge Edition
+            {dailyChallenge ? "Daily Challenge Edition" : "Snippetdle Edition"}
           </p>
 
           <p className="hidden text-xs font-bold uppercase text-white sm:block md:text-xl">

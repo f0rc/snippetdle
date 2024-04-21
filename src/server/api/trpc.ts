@@ -8,11 +8,12 @@
  */
 
 import { initTRPC, TRPCError } from "@trpc/server";
+import { Session } from "next-auth";
 import superjson from "superjson";
 import { ZodError } from "zod";
 
 import { getServerAuthSession } from "~/server/auth";
-import { db } from "~/server/db";
+import { db, dbType } from "~/server/db";
 
 /**
  * 1. CONTEXT
@@ -45,6 +46,15 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
     session,
     ...opts,
   };
+};
+export type TRPCContextType = {
+  requestMeta: {
+    ip?: string;
+    userAgent?: string;
+  };
+  db: dbType;
+  session: Session;
+  headers: Headers;
 };
 /**
  * 2. INITIALIZATION

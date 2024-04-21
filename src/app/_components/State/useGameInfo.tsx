@@ -2,7 +2,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 
 export interface roundInfoType {
-  songStep: number;
   artistName: string;
   correct: boolean;
   skip: boolean;
@@ -10,12 +9,13 @@ export interface roundInfoType {
 
 export type GameMainState = {
   gameId: string;
-  sync: boolean;
   gameDate: string;
+  dailyChallenge: boolean;
   volume: number;
   songStep: number;
   gameOver: boolean;
   roundInfo: roundInfoType[];
+  roundId: string;
 };
 
 export type GameInfoContext = {
@@ -25,6 +25,7 @@ export type GameInfoContext = {
   selectAnswer: string;
   setSelectAnswer: (selectAnswer: string) => void;
   loaded: boolean;
+  addSong: (newSong: string) => void;
 };
 
 const GameInfoContext = createContext<GameInfoContext | null>(null);
@@ -45,13 +46,28 @@ export const GameMetaProvider = ({
 }) => {
   const [gameInfo, setGameInfo] = useState<GameMainState>({
     gameId: "",
-    sync: false,
+    dailyChallenge: false,
     gameDate: "",
     volume: 10,
     songStep: 0,
     gameOver: false,
     roundInfo: [],
+    roundId: "",
   });
+
+  const [songs, setSongs] = useState<Set<string>>(new Set());
+
+  const addSong = (newSong: string) => {
+    setSongs((prevSongs) => {
+      const uniqueSongs = new Set(prevSongs);
+      uniqueSongs.add(newSong);
+      return uniqueSongs;
+    });
+  };
+
+  useEffect(() => {
+    console.log(songs);
+  }, [songs]);
 
   const [selectAnswer, setSelectAnswer] = useState("");
 
@@ -60,12 +76,14 @@ export const GameMetaProvider = ({
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    const gameInfoLocal = localStorage.getItem("gameInfo");
+    if (gameInfo.dailyChallenge) {
+      const gameInfoLocal = localStorage.getItem("gameInfo");
 
-    if (gameInfoLocal) {
-      const x = JSON.parse(gameInfoLocal) as GameMainState;
-      if (x.roundInfo.length && gameInfo.gameDate === x.gameDate) {
-        setGameInfo(x);
+      if (gameInfoLocal) {
+        const x = JSON.parse(gameInfoLocal) as GameMainState;
+        if (x.roundInfo.length && gameInfo.gameDate === x.gameDate) {
+          setGameInfo(x);
+        }
       }
     }
 
@@ -74,28 +92,12 @@ export const GameMetaProvider = ({
 
   // save to local storage on roundInfo change
   useEffect(() => {
-    if (gameInfo.roundInfo.length) {
+    if (gameInfo.roundInfo.length && gameInfo.dailyChallenge) {
       localStorage.setItem("gameInfo", JSON.stringify(gameInfo));
     }
   }, [gameInfo]);
 
   // useeffect to color in the rounds
-  useEffect(() => {
-    if (gameInfo.roundInfo.length) {
-      gameInfo.roundInfo.forEach((round) => {
-        const roundElement = document.getElementById(round.songStep + "round");
-        if (roundElement) {
-          if (round.correct) {
-            roundElement.style.backgroundColor = "#3BB143";
-          } else if (round.skip) {
-            roundElement.style.backgroundColor = "#808080";
-          } else {
-            roundElement.style.backgroundColor = "#FF0000";
-          }
-        }
-      });
-    }
-  }, [gameInfo.roundInfo]);
 
   // effect to end game
   useEffect(() => {
@@ -113,6 +115,7 @@ export const GameMetaProvider = ({
         playIntervals,
         selectAnswer,
         setSelectAnswer,
+        addSong,
       }}
     >
       {children}

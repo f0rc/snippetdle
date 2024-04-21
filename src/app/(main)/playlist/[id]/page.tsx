@@ -28,9 +28,7 @@ export default async function Page({ params }: { params: { id: string } }) {
                 <p className="text-start font-semibold">
                   has {playlistData.songs.length} songs
                 </p>
-                <p className="text-start font-semibold">
-                  by: {playlistData.playlistAuthor}
-                </p>
+                <p className="text-start font-semibold">by: TODO</p>
               </div>
             </div>
 
@@ -38,7 +36,9 @@ export default async function Page({ params }: { params: { id: string } }) {
               {/* <div>Meta data about playlist</div> TOOD: add likes and playlist play count and featuered in daily or notand also maybe other stuff like ranking */}
               <Link
                 className="w-full self-center rounded-md bg-yellow-400 py-2 text-center font-semibold text-black transition-colors duration-300 ease-in-out  hover:bg-yellow-500 focus:bg-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-opacity-50"
-                href={"#"}
+                href={{
+                  pathname: `/playlist/${params.id}/play`,
+                }}
               >
                 Play
               </Link>

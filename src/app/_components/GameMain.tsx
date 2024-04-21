@@ -164,6 +164,7 @@ const GameMain = (GameMainProps: GameMainProps) => {
           isPlaying={isPlaying}
           handlePlay={handlePlay}
           showPlayButton={audioLoaded}
+          dailyChallenge={true}
           tapeText={
             gameInfo.roundInfo.length
               ? gameInfo.roundInfo.map((round) => {
