@@ -313,53 +313,6 @@ export const playlistGame = createTRPCRouter({
       };
     }),
 
-  getNextSong: protectedProcedure
-    .input(
-      z.object({
-        gameId: z.string(),
-        pastSongs: z.string().array(),
-      }),
-    )
-    .query(async ({ input, ctx }) => {
-      const newSong = await ctx.db.query.Song.findFirst({
-        where: (model, { notInArray }) => notInArray(model.id, input.pastSongs),
-      });
-
-      if (!newSong) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Unable to find any song",
-        });
-      }
-
-      const updateGameTable = await ctx.db
-        .update(game)
-        .set({
-          songsPlayed: sql`${game.songsPlayed} || ${newSong.id}`,
-        })
-        .where(eq(game.id, input.gameId))
-        .returning();
-
-      if (!updateGameTable[0]) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Unable to update game",
-        });
-      }
-
-      return {
-        success: true,
-        song: {
-          id: newSong.id,
-          preview_url: newSong.preview_url,
-          album_name: newSong.album_name,
-          album_image: newSong.album_image,
-          album_release_date: newSong.album_release_date,
-          artist_name: newSong.artist_name,
-        },
-      };
-    }),
-
   updateGameAttempt: protectedProcedure
     .input(
       z.object({
@@ -407,5 +360,50 @@ export const playlistGame = createTRPCRouter({
         success: true,
         gameAttempt: gameAttemptDbRes[0],
       };
+    }),
+
+  getNextRound: protectedProcedure
+    .input(
+      z.object({
+        playlistId: z.string(),
+        gameId: z.string(),
+      }),
+    )
+    .query(async ({ input, ctx }) => {
+      // fetch the game table and get the songs table
+      const songsUsed = await ctx.db.query.game.findFirst({
+        where: (model) => eq(model.id, input.gameId),
+      });
+
+      if (!songsUsed) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "game not found",
+        });
+      }
+
+      const playListLength = await ctx.db
+        .select({ count: count() })
+        .from(Song)
+        .where(sql`${input.playlistId} = ANY(${Song.playlistId})`);
+
+      if (!playListLength[0]) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Game is found but no songs from playlist are found",
+        });
+      }
+
+      if (playListLength[0].count === songsUsed.songsPlayed.length) {
+        return {
+          success: true,
+          gameOver: true,
+        };
+      }
+
+      // fetch a new song that hasn't been used before
+      // add this song to the game table on game.id
+      // create new round info
+      // return new song and updated game info and new round info
     }),
 });

@@ -4,81 +4,11 @@ import { useGameInfo } from "./State/useGameInfo";
 import { getAudioDuration } from "./utils/getTimeDuration";
 import CassettePlayer from "./CassettePlayer";
 import ArtistSearch from "./ArtistSearch";
-import { api } from "~/trpc/react";
-import GameOver from "./GameOver";
-import { gameInfoAtom } from "~/State/GameInfo";
-import { useAtom } from "jotai";
-import { type RoundInfo } from "../(main)/playlist/[id]/play/_LoadGame";
+import GameOver, { RoundOver } from "./GameOver";
 
-export type GameProps = {
-  gameInfo: {
-    gameId: string;
-    date: string;
-    playlistId: string;
-    dailyChallenge: boolean;
-    roundId: string;
-  };
-  song: {
-    id: string;
-    preview_url: string;
-    album_name: string;
-    album_image: string;
-    album_release_date: string;
-    artist_name: string;
-  };
-
-  gameType: GameType;
-  roundInfo: RoundInfo | undefined;
-};
-
-export type GameType = "daily" | "playlist";
-
-const Game = (gameProps: GameProps) => {
-  const { playIntervals, selectAnswer, loaded, addSong } = useGameInfo();
-
-  const [gameInfo, setGameInfo] = useAtom(gameInfoAtom);
-
-  useEffect(() => {
-    if (gameProps.roundInfo) {
-      const roundInfoArray = gameProps.roundInfo?.guess?.map((round, index) => {
-        return {
-          songStep: index,
-          artistName: round,
-          correct: gameProps.song.artist_name.includes(round),
-          skip:
-            !gameProps.song.artist_name.includes(round) &&
-            round === "round_skip",
-        };
-      });
-
-      console.log("GOING TO SET STEP TO", gameProps.roundInfo.attempts);
-
-      setGameInfo({
-        dailyChallenge: gameProps.gameInfo.dailyChallenge,
-        gameDate: gameProps.gameInfo.date,
-        gameId: gameProps.gameInfo.gameId,
-        songStep: gameProps.roundInfo.attempts,
-        gameOver: false,
-        roundId: gameProps.gameInfo.roundId,
-        roundInfo: roundInfoArray ?? [],
-        volume: 30,
-      });
-    } else {
-      console.log("new game");
-      setGameInfo({
-        dailyChallenge: gameProps.gameInfo.dailyChallenge,
-        gameDate: gameProps.gameInfo.date,
-        gameId: gameProps.gameInfo.gameId,
-        songStep: 0,
-        gameOver: false,
-        roundId: gameProps.gameInfo.roundId,
-        roundInfo: [],
-        volume: 30,
-      });
-    }
-
-    addSong(gameProps.song.id);
-  }, []);
+const Game = () => {
+  const { playIntervals, selectAnswer, gameInfo, handleRoundSubmit } =
+    useGameInfo();
 
   const audioPlayer = useRef<HTMLAudioElement>(null);
 
@@ -127,13 +57,9 @@ const Game = (gameProps: GameProps) => {
   };
 
   const handlePlay = async () => {
-    if (
-      !isPlaying &&
-      gameInfo.songStep < playIntervals.length &&
-      !gameInfo.gameOver
-    ) {
-      if (gameInfo.songStep <= 5) {
-        await playAudio(gameInfo.songStep);
+    if (!isPlaying && gameInfo.roundInfo.length < playIntervals.length) {
+      if (gameInfo.roundInfo.length <= 5) {
+        await playAudio(gameInfo.roundInfo.length);
       }
     } else if (isPlaying) {
       if (audioPlayer.current) {
@@ -160,74 +86,11 @@ const Game = (gameProps: GameProps) => {
     }
   }, [audioPlayer.current]);
 
-  // update API call when submitting answer
-
-  const updateGameApi = api.playlistGame.updateGameAttempt.useMutation({
-    onSuccess: (data) => {
-      console.log("Sucess db attempt recorded", data);
-    },
-  });
-
-  const handleRoundSubmit = async (skip: boolean) => {
-    const newRoundInfo = {
-      artistName: skip ? "round_skip" : selectAnswer,
-      correct: selectAnswer === gameProps.song.artist_name && !skip,
-      skip: skip,
-    };
-
-    console.log("BEFORE UPDATES", gameInfo);
-
-    setGameInfo((p) => ({
-      ...p,
-      songStep: p.songStep + 1,
-      roundInfo: [...p.roundInfo, newRoundInfo],
-    }));
-
-    // update if correct
-    if (newRoundInfo.correct) {
-      setGameInfo((p) => ({
-        ...p,
-        gameOver: true,
-      }));
-    } else if (gameInfo.songStep + 1 > 5) {
-      setGameInfo((p) => ({
-        ...p,
-        gameOver: true,
-      }));
-    }
-
-    await updateGameApi.mutateAsync({
-      attempts: gameInfo.songStep + 1,
-      attemptId: gameInfo.roundId,
-      gameId: gameInfo.gameId,
-      songId: gameProps.song.id,
-      userGuess: newRoundInfo.artistName,
-      isOver: newRoundInfo.correct || gameInfo.songStep + 1 > 5,
-    });
-  };
-
-  useEffect(() => {
-    if (gameInfo.roundInfo.length) {
-      gameInfo.roundInfo.forEach((round, index) => {
-        const roundElement = document.getElementById(index + "round");
-        if (roundElement) {
-          if (round.correct) {
-            roundElement.style.backgroundColor = "#3BB143";
-          } else if (round.skip) {
-            roundElement.style.backgroundColor = "#808080";
-          } else {
-            roundElement.style.backgroundColor = "#FF0000";
-          }
-        }
-      });
-    }
-  }, [gameInfo.roundInfo]);
-
   return (
     <div className="flex h-full w-screen max-w-xl flex-col items-center justify-center px-4 pt-4 lg:px-0 lg:pt-0">
       <audio
         ref={audioPlayer}
-        src={gameProps.song.preview_url}
+        src={gameInfo.currentSong?.preview_url}
         preload="true"
         loop
         onTimeUpdate={() => {
@@ -242,7 +105,7 @@ const Game = (gameProps: GameProps) => {
           isPlaying={isPlaying}
           handlePlay={handlePlay}
           showPlayButton={audioLoaded}
-          dailyChallenge={gameProps.gameInfo.dailyChallenge}
+          dailyChallenge={false}
           tapeText={
             gameInfo.roundInfo.length
               ? gameInfo.roundInfo.map((round) => {
@@ -265,9 +128,19 @@ const Game = (gameProps: GameProps) => {
             {Array.from({ length: playIntervals.length }).map((_, i) => (
               <div
                 key={i}
-                className={`w-1/5 border border-white p-2`}
+                className={`w-1/5 border border-white p-2 ${
+                  gameInfo.roundInfo[i]?.skip
+                    ? "bg-gray-500"
+                    : gameInfo.roundInfo[i]?.correct
+                      ? "bg-green-500"
+                      : gameInfo.roundInfo[i]?.correct === false
+                        ? "bg-red-500"
+                        : "bg-none"
+                }`}
                 id={i.toString() + "round"}
-              />
+              >
+                {gameInfo.roundInfo[i]?.correct === true}{" "}
+              </div>
             ))}
           </div>
 
@@ -297,22 +170,11 @@ const Game = (gameProps: GameProps) => {
         ))}
       </div>
 
-      {loaded && audioLoaded && (
+      {audioLoaded && (
         <div className="flex w-full items-start">
-          {gameInfo.gameOver ? (
+          {gameInfo.roundOver ? (
             <div className="flex w-full flex-col justify-between gap-10">
-              <GameOver
-                album_image={gameProps.song.album_image}
-                album_name={gameProps.song.album_name}
-                album_release_date={gameProps.song.album_release_date}
-                artist_name={gameProps.song.artist_name}
-                roundInfo={gameInfo.roundInfo}
-              />
-              <div className="flex items-center justify-center">
-                <button className="flex rounded-md bg-yellow-500 px-4 py-2  font-semibold uppercase text-black transition-colors duration-300 ease-in-out hover:bg-yellow-400 focus:bg-yellow-400 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-opacity-50">
-                  Next Round
-                </button>
-              </div>
+              {gameInfo.currentSong && !gameInfo.gameOver && <RoundOver />}
             </div>
           ) : (
             <div className={`flex w-full flex-row justify-center gap-2`}>
@@ -321,7 +183,7 @@ const Game = (gameProps: GameProps) => {
                 <button
                   className="rounded-lg bg-yellow-400 px-4 py-2 font-semibold text-black"
                   onClick={async () => {
-                    selectAnswer && (await handleRoundSubmit(false));
+                    selectAnswer && handleRoundSubmit(false);
                   }}
                 >
                   <svg
@@ -342,7 +204,7 @@ const Game = (gameProps: GameProps) => {
                 <button
                   className="rounded-lg bg-gray-600 px-2 font-semibold"
                   onClick={async () => {
-                    await handleRoundSubmit(true);
+                    handleRoundSubmit(true);
                   }}
                 >
                   Skip

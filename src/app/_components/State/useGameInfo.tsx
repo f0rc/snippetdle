@@ -6,26 +6,42 @@ export interface roundInfoType {
   correct: boolean;
   skip: boolean;
 }
+export type SongType = {
+  id: string;
+  preview_url: string;
+  album_name: string;
+  album_image: string;
+  album_release_date: string;
+  artist_name: string;
+};
 
-export type GameMainState = {
-  gameId: string;
-  gameDate: string;
-  dailyChallenge: boolean;
-  volume: number;
-  songStep: number;
-  gameOver: boolean;
+export type GameRounds = {
+  song: SongType | null;
+  rounds: roundInfoType[] | null;
+};
+
+export type GameState = {
+  roundOver: boolean;
+  currentIndex: number | null;
+  totalRounds: number | null;
+  gameDate: string | null;
+  songsPlayed: SongType[];
   roundInfo: roundInfoType[];
-  roundId: string;
+  currentSong: SongType | null;
+
+  gameRound: GameRounds[];
+  gameOver: boolean;
+  totalScore: number;
+  totalPossibleScore: number;
 };
 
 export type GameInfoContext = {
-  gameInfo: GameMainState;
-  setGameInfo: React.Dispatch<React.SetStateAction<GameMainState>>;
+  gameInfo: GameState;
+  setGameInfo: React.Dispatch<React.SetStateAction<GameState>>;
   playIntervals: number[];
   selectAnswer: string;
   setSelectAnswer: (selectAnswer: string) => void;
-  loaded: boolean;
-  addSong: (newSong: string) => void;
+  handleRoundSubmit: (skip: boolean) => void;
 };
 
 const GameInfoContext = createContext<GameInfoContext | null>(null);
@@ -44,78 +60,74 @@ export const GameMetaProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const [gameInfo, setGameInfo] = useState<GameMainState>({
-    gameId: "",
-    dailyChallenge: false,
-    gameDate: "",
-    volume: 10,
-    songStep: 0,
-    gameOver: false,
+  const [gameInfo, setGameInfo] = useState<GameState>({
+    roundOver: false,
+    currentIndex: null,
+    totalRounds: null,
+    gameDate: null,
+    songsPlayed: [],
     roundInfo: [],
-    roundId: "",
+    gameRound: [],
+    currentSong: null,
+
+    gameOver: false,
+    totalPossibleScore: 0,
+    totalScore: 0,
   });
-
-  const [songs, setSongs] = useState<Set<string>>(new Set());
-
-  const addSong = (newSong: string) => {
-    setSongs((prevSongs) => {
-      const uniqueSongs = new Set(prevSongs);
-      uniqueSongs.add(newSong);
-      return uniqueSongs;
-    });
-  };
-
-  useEffect(() => {
-    console.log(songs);
-  }, [songs]);
 
   const [selectAnswer, setSelectAnswer] = useState("");
 
   const playIntervals = [1000, 2000, 3000, 5000, 7000, 10000];
 
-  const [loaded, setLoaded] = useState(false);
+  const handleRoundSubmit = (skip: boolean) => {
+    const newRoundInfo = {
+      artistName: skip ? "round_skip" : selectAnswer,
+      correct: selectAnswer === gameInfo.currentSong?.artist_name && !skip,
+      skip: skip,
+    };
 
-  useEffect(() => {
-    if (gameInfo.dailyChallenge) {
-      const gameInfoLocal = localStorage.getItem("gameInfo");
+    setGameInfo((p) => ({
+      ...p,
+      roundInfo: [...p.roundInfo, newRoundInfo],
+    }));
 
-      if (gameInfoLocal) {
-        const x = JSON.parse(gameInfoLocal) as GameMainState;
-        if (x.roundInfo.length && gameInfo.gameDate === x.gameDate) {
-          setGameInfo(x);
-        }
-      }
+    if (newRoundInfo.correct) {
+      setGameInfo((p) => ({
+        ...p,
+        roundOver: true,
+      }));
+    } else if (gameInfo.roundInfo.length > 5) {
+      setGameInfo((p) => ({
+        ...p,
+        roundOver: true,
+      }));
     }
-
-    setLoaded(true);
-  }, []);
-
-  // save to local storage on roundInfo change
-  useEffect(() => {
-    if (gameInfo.roundInfo.length && gameInfo.dailyChallenge) {
-      localStorage.setItem("gameInfo", JSON.stringify(gameInfo));
-    }
-  }, [gameInfo]);
-
-  // useeffect to color in the rounds
+  };
 
   // effect to end game
   useEffect(() => {
-    if (gameInfo.songStep >= 6) {
-      setGameInfo((p) => ({ ...p, gameOver: true }));
+    if (gameInfo.roundInfo.length >= 6) {
+      console.log("WE GOING TO END ROUND");
+      setGameInfo((p) => ({ ...p, roundOver: true }));
     }
-  }, [gameInfo.songStep]);
+  }, [gameInfo.roundInfo.length]);
+
+  // useEffect(() => {
+  //   if (gameInfo.songsPlayed.length === gameInfo.totalRounds) {
+  //     console.log("GAME END");
+  //     setGameInfo((p) => ({ ...p, gameOver: true }));
+  //   }
+  // }, [gameInfo.songsPlayed]);
 
   return (
     <GameInfoContext.Provider
       value={{
-        loaded,
         gameInfo,
         setGameInfo,
         playIntervals,
         selectAnswer,
         setSelectAnswer,
-        addSong,
+        handleRoundSubmit,
       }}
     >
       {children}

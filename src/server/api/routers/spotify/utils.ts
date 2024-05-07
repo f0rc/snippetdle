@@ -1,6 +1,6 @@
 import { gt } from "drizzle-orm";
 import { env } from "~/env";
-import { dbType } from "~/server/db";
+import type { dbType } from "~/server/db";
 import { spotifySecret } from "~/server/db/schema";
 
 export interface SpotifyResponse {

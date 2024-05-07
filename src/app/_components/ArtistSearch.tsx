@@ -27,7 +27,7 @@ const ArtistSearch = () => {
       enabled:
         debouncedInputValue.length > 2 &&
         selectAnswer !== debouncedInputValue &&
-        !gameInfo.gameOver,
+        !gameInfo.roundOver,
     },
   );
   return (
@@ -41,7 +41,7 @@ const ArtistSearch = () => {
       />
       <div
         className={`mt-2 flex w-full flex-col gap-1 rounded-md ${
-          gameInfo.gameOver ? " hidden " : ""
+          gameInfo.roundOver ? " hidden " : ""
         }`}
       >
         {artistSearch.isLoading && artistSearch.fetchStatus !== "idle" ? (
