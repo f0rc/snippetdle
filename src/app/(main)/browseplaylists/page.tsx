@@ -13,8 +13,11 @@ const Page = async () => {
     <div className="mx-auto grid max-w-4xl gap-6 p-4 py-12 md:grid-cols-3">
       {playlists.map((playlist, index) => {
         return (
-          <div className=" relative overflow-hidden rounded-xl border border-neutral-700 transition-all duration-300 hover:scale-105">
-            <a key={index} className="" href={`/playlist/${playlist.id}`}>
+          <div
+            className=" relative overflow-hidden rounded-xl border border-neutral-700 transition-all duration-300 hover:scale-105"
+            key={index}
+          >
+            <a className="" href={`/playlist/${playlist.id}`}>
               {/* Overlay */}
               <div className="absolute z-10 h-full w-full rounded-xl bg-black/50 text-white">
                 <p className="px-2 pt-4 text-2xl font-bold">{playlist.name} </p>
