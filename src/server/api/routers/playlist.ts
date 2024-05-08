@@ -23,7 +23,7 @@ export const playlistRouter = createTRPCRouter({
         .where(sql`${playlist.id} = ${input.id}`)
         .leftJoin(users, sql`${playlist.createdById} = ${users.id}`);
 
-      console.log(playlistMeta);
+      // console.log(playlistMeta);
 
       if (!playlistInfo) {
         throw new TRPCError({

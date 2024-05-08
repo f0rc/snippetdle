@@ -12,7 +12,7 @@ export default async function Page({ params }: { params: { id: string } }) {
         <div className="flex w-full flex-col rounded-md bg-neutral-800">
           <div className="flex h-full w-full items-center justify-between rounded-t-md bg-neutral-900 p-4 md:p-10">
             <div className="flex h-full w-full flex-col gap-4 md:flex-row md:items-end">
-              <div>
+              <div className="overflow-hidden rounded-md border border-neutral-600 ">
                 <Image
                   className="rounded-md"
                   src={playlistData.playlistImage ?? "/playlist.png"}
@@ -28,7 +28,7 @@ export default async function Page({ params }: { params: { id: string } }) {
                 <p className="text-start font-semibold">
                   has {playlistData.songs.length} songs
                 </p>
-                <p className="text-start font-semibold">by: TODO</p>
+                {/* <p className="text-start font-semibold">by: TODO</p> */}
               </div>
             </div>
 

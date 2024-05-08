@@ -2,7 +2,7 @@
 
 import { api } from "~/trpc/react";
 import Game from "~/app/_components/Game";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useGameInfo } from "~/app/_components/State/useGameInfo";
 import GameOver from "~/app/_components/GameOver";
 import { Loader } from "~/app/_components/Loader";
@@ -39,6 +39,7 @@ const NewGamePage = ({ params }: { params: { id: string } }) => {
 
         totalPossibleScore: playlistData.data.songs.length * 6,
         totalScore: 0,
+        isDaily: false,
       });
     }
   }, [createGameApi.isSuccess]);
@@ -50,10 +51,10 @@ const NewGamePage = ({ params }: { params: { id: string } }) => {
         (song) => !playedSongIds.includes(song.id),
       );
 
-      console.log(unplayedSongs);
+      // console.log(unplayedSongs);
 
       if (unplayedSongs.length > 0) {
-        console.log("we here gang", gameInfo.roundInfo);
+        // console.log("we here gang", gameInfo.roundInfo);
         const randomSong =
           unplayedSongs[Math.floor(Math.random() * unplayedSongs.length)];
         if (randomSong) {
@@ -75,12 +76,12 @@ const NewGamePage = ({ params }: { params: { id: string } }) => {
             roundOver: false,
           }));
         } else {
-          console.log("no random song");
+          // console.log("no random song");
         }
 
         return;
       } else {
-        console.log("yeah");
+        // console.log("yeah");
         // no songs left game over
         setGameInfo((p) => ({
           ...p,

@@ -17,6 +17,7 @@ const PlaylistList = ({ songs }: { songs: getPlaylistSongstype[] }) => {
               className="flex w-full flex-row items-start gap-4 rounded-md p-4 hover:bg-neutral-700"
             >
               <Image
+                className=""
                 width={100}
                 height={100}
                 src={song.album_image}

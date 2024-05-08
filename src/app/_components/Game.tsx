@@ -93,6 +93,7 @@ const Game = () => {
         src={gameInfo.currentSong?.preview_url}
         preload="true"
         loop
+        crossOrigin="anonymous"
         onTimeUpdate={() => {
           if (audioPlayer.current) {
             setTime(getAudioDuration(audioPlayer.current));
@@ -104,7 +105,7 @@ const Game = () => {
         <CassettePlayer
           isPlaying={isPlaying}
           handlePlay={handlePlay}
-          showPlayButton={audioLoaded}
+          showPlayButton={audioLoaded && !!gameInfo.currentSong?.preview_url}
           dailyChallenge={false}
           tapeText={
             gameInfo.roundInfo.length
@@ -177,7 +178,11 @@ const Game = () => {
               {gameInfo.currentSong && !gameInfo.gameOver && <RoundOver />}
             </div>
           ) : (
-            <div className={`flex w-full flex-row justify-center gap-2`}>
+            <div
+              className={`flex w-full flex-row justify-center gap-2 ${
+                gameInfo.currentSong ? "" : "hidden"
+              }`}
+            >
               <ArtistSearch />
               <div className="flex h-12 w-1/5 flex-row gap-2">
                 <button

@@ -27,7 +27,7 @@ export const gameRouter = createTRPCRouter({
       const url = getPlaylistIdFromUrl(input.spotifyPlaylistUrl);
 
       if (!url) {
-        console.log("NO URL");
+        // console.log("NO URL");
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Invalid playlist url",
@@ -63,14 +63,14 @@ export const gameRouter = createTRPCRouter({
       )
         .then((res) => res.json())
         .catch((e) => {
-          console.log(e);
+          // console.log(e);
           throw new TRPCError({
             code: "BAD_REQUEST",
             message: "Failed to fetch playlist from spotify",
           });
         });
 
-      console.log("got playlist from spotify", url);
+      // console.log("got playlist from spotify", url);
 
       const playlist = getPlaylistFromSpotify as SpotifyResponse;
 
@@ -84,7 +84,7 @@ export const gameRouter = createTRPCRouter({
 
       if (playlist.hasOwnProperty("error")) {
         await ctx.db.delete(playlistSchema).where(eq(playlistSchema.id, url));
-        console.log("Playlist not found types dont match");
+        // console.log("Playlist not found types dont match");
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Playlist not found",
@@ -109,7 +109,7 @@ export const gameRouter = createTRPCRouter({
         })
         .returning()
         .catch((e) => {
-          console.log("UNABLE TO PUT INTO DB", e);
+          // console.log("UNABLE TO PUT INTO DB", e);
           throw new TRPCError({
             code: "BAD_REQUEST",
             message: "Playlist already exists",
@@ -124,7 +124,7 @@ export const gameRouter = createTRPCRouter({
         });
       }
 
-      console.log("PLAYLIST DB", playlist.tracks.items);
+      // console.log("PLAYLIST DB", playlist.tracks.items);
 
       const songDataList = [];
 
@@ -150,7 +150,7 @@ export const gameRouter = createTRPCRouter({
         // delete the playlist from the db
         await ctx.db.delete(playlistSchema).where(eq(playlistSchema.id, url));
 
-        console.log("NO SONGS WITH PREVIEW URL");
+        // console.log("NO SONGS WITH PREVIEW URL");
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Unfortunate Situation",
@@ -167,7 +167,7 @@ export const gameRouter = createTRPCRouter({
               Object.keys(songDataList[0] ?? {}).map((x) => {
                 // append to the playlistId array instead of replacing it
                 if (x === "playlistId") {
-                  console.log(x);
+                  // console.log(x);
                   return [
                     x,
                     sql.raw(
@@ -183,7 +183,7 @@ export const gameRouter = createTRPCRouter({
           },
         })
         .catch((e) => {
-          console.log(e);
+          // console.log(e);
           throw new TRPCError({
             code: "BAD_REQUEST",
             message: "Failed to create songs",
@@ -199,7 +199,7 @@ export const gameRouter = createTRPCRouter({
   getGame: publicProcedure
     .input(z.object({ gameId: z.string() }))
     .query(async ({ input, ctx }) => {
-      console.log("Get game from db?");
+      // console.log("Get game from db?");
     }),
 
   getAllPlaylists: publicProcedure
@@ -298,7 +298,7 @@ export const gameRouter = createTRPCRouter({
         } as dailyChallengeType,
       };
     } else {
-      console.log("Attpemting to create new daily challenge");
+      // console.log("Attpemting to create new daily challenge");
       // create a new daily challenge and return it
       const randomSong = await ctx.db
         .select()
@@ -309,7 +309,7 @@ export const gameRouter = createTRPCRouter({
         .then((res) => res[0]);
 
       if (!randomSong) {
-        console.log("[ERROR]: no songs available");
+        // console.log("[ERROR]: no songs available");
         return {
           dailyChallenge: null,
         };
@@ -334,14 +334,14 @@ export const gameRouter = createTRPCRouter({
         .returning();
 
       if (!songUpdate[0]) {
-        console.log("[ERROR]: failed to update song");
+        // console.log("[ERROR]: failed to update song");
         return {
           dailyChallenge: null,
         };
       }
 
       if (!newDailyChallenge[0]) {
-        console.log("[ERROR]: failed to create daily challenge");
+        // console.log("[ERROR]: failed to create daily challenge");
         return {
           dailyChallenge: null,
         };
@@ -426,7 +426,7 @@ export const gameRouter = createTRPCRouter({
       let artistResult: (typeof artist.$inferSelect)[] = [];
 
       if (getArtistFromDb.length < 5) {
-        console.log("==============================searching spotify");
+        // console.log("==============================searching spotify");
         const res = await searchArtist(input.artistName, token);
 
         artistResult = res.artists.items.map((artist) => {
@@ -483,7 +483,7 @@ export const gameRouter = createTRPCRouter({
         ).values(),
       );
 
-      console.log("UNIQUE ARTISTS", uniqueArtists);
+      // console.log("UNIQUE ARTISTS", uniqueArtists);
 
       const newList = uniqueArtists.sort((a, b) => {
         const distanceA = levenshteinDistance(
@@ -522,8 +522,6 @@ async function searchArtist(artistInput: string, apiToken: string) {
       Authorization: "Bearer " + apiToken,
     },
   }).then((res) => res.json() as Promise<ArtistAPIType>);
-
-  // const artistSearchResponse = fakeData;
 
   return artistSearchResponse;
 }

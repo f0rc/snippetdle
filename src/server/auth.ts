@@ -51,7 +51,7 @@ const nextAuthSchema = {
 export const authOptions: NextAuthOptions = {
   callbacks: {
     session: ({ session, user }) => {
-      console.log("USER", user);
+      // console.log("USER", user);
       return {
         ...session,
         user: {

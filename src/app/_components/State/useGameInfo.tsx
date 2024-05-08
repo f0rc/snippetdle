@@ -33,6 +33,8 @@ export type GameState = {
   gameOver: boolean;
   totalScore: number;
   totalPossibleScore: number;
+
+  isDaily: boolean;
 };
 
 export type GameInfoContext = {
@@ -73,6 +75,7 @@ export const GameMetaProvider = ({
     gameOver: false,
     totalPossibleScore: 0,
     totalScore: 0,
+    isDaily: false,
   });
 
   const [selectAnswer, setSelectAnswer] = useState("");
@@ -86,38 +89,47 @@ export const GameMetaProvider = ({
       skip: skip,
     };
 
-    setGameInfo((p) => ({
-      ...p,
-      roundInfo: [...p.roundInfo, newRoundInfo],
-    }));
+    const updatedGameInfo = {
+      ...gameInfo,
+      roundInfo: [...gameInfo.roundInfo, newRoundInfo],
+    };
 
-    if (newRoundInfo.correct) {
-      setGameInfo((p) => ({
-        ...p,
-        roundOver: true,
-      }));
-    } else if (gameInfo.roundInfo.length > 5) {
-      setGameInfo((p) => ({
-        ...p,
-        roundOver: true,
-      }));
+    if (gameInfo.isDaily) {
+      // console.log("GOING TO SET ROUND", gameInfo.roundInfo, newRoundInfo);
+      localStorage.setItem(
+        JSON.stringify(gameInfo.gameDate),
+        JSON.stringify(updatedGameInfo),
+      );
     }
+
+    if (newRoundInfo.correct || gameInfo.roundInfo.length > 5) {
+      updatedGameInfo.roundOver = true;
+      if (gameInfo.isDaily) {
+        localStorage.setItem(
+          JSON.stringify(gameInfo.gameDate),
+          JSON.stringify(updatedGameInfo),
+        );
+      }
+    }
+
+    setGameInfo(updatedGameInfo);
   };
 
-  // effect to end game
+  // effect to end round
   useEffect(() => {
     if (gameInfo.roundInfo.length >= 6) {
-      console.log("WE GOING TO END ROUND");
       setGameInfo((p) => ({ ...p, roundOver: true }));
+      if (gameInfo.isDaily) {
+        localStorage.setItem(
+          JSON.stringify(gameInfo.gameDate),
+          JSON.stringify({
+            ...gameInfo,
+            roundOver: true,
+          }),
+        );
+      }
     }
   }, [gameInfo.roundInfo.length]);
-
-  // useEffect(() => {
-  //   if (gameInfo.songsPlayed.length === gameInfo.totalRounds) {
-  //     console.log("GAME END");
-  //     setGameInfo((p) => ({ ...p, gameOver: true }));
-  //   }
-  // }, [gameInfo.songsPlayed]);
 
   return (
     <GameInfoContext.Provider

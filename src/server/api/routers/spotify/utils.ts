@@ -157,7 +157,7 @@ export const getSpotifyToken = async ({ db }: { db: dbType }) => {
       throw new Error("Failed to fetch token");
     }
     const tokenFromApi = (await res.json()) as spotifyAccessTokenReturnType;
-    console.log("getting new access token");
+    // console.log("getting new access token");
     const expires = new Date().valueOf() + tokenFromApi.expires_in * 1000;
     await db.insert(spotifySecret).values({
       access_token: tokenFromApi.access_token,

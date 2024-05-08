@@ -14,6 +14,7 @@ import { ZodError } from "zod";
 
 import { getServerAuthSession } from "~/server/auth";
 import { db, dbType } from "~/server/db";
+import { ratelimit } from "../ratelimit";
 
 /**
  * 1. CONTEXT
@@ -36,6 +37,22 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
   const ip = remoteAddress.split(",")[0];
 
   const userAgent = opts.headers.get("user-agent") ?? "no-user-agent";
+
+  if (!ip) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Something went wrong",
+    });
+  }
+
+  const { success } = await ratelimit.limit(ip);
+
+  if (!success) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Something went wrong",
+    });
+  }
 
   return {
     requestMeta: {
@@ -130,7 +147,7 @@ const enforceUserIsAdmin = t.middleware(({ ctx, next }) => {
   }
   return next({
     ctx: {
-      // infers the `session` as non-nullable
+      // infers the `session` as noUPSTASH_REDIS_REST_TOKENn-nullable
       session: { ...ctx.session, user: ctx.session.user },
     },
   });

@@ -2,7 +2,7 @@
 
 import { type Session } from "next-auth";
 import { useState } from "react";
-import { SignoutDialog } from "../(auth)/comps/SignoutBox";
+import { SignoutDialog } from "./SignoutBox";
 
 const Nav = ({ session }: { session: Session | null }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -12,15 +12,15 @@ const Nav = ({ session }: { session: Session | null }) => {
         <nav className="z-0 mx-auto flex w-full max-w-screen-2xl p-4">
           <div className="flex w-full flex-row">
             <ul className="">
-              <a href="/" className="text-4xl font-black">
-                Game
+              <a href="/" className="text-4xl font-black uppercase">
+                snippetdle
               </a>
             </ul>
 
             <ul className="flex-1" />
             <ul className="flex gap-4">
               <li className="hidden items-center justify-end rounded-md p-2 hover:bg-black/20 lg:flex">
-                <a href="/newgame" className="text-xl font-semibold">
+                <a href="/customgame" className="text-xl font-semibold">
                   Custom Games
                 </a>
               </li>
