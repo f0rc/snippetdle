@@ -14,7 +14,7 @@ const inter = Inter({
 
 export const metadata = {
   title: "Guess the artist",
-  description: "Proslusha | Guess the artist",
+  description: "SNIPPETDLE | Guess the artist",
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 
