@@ -1,4 +1,3 @@
-"use-client";
 import React, { useEffect, useState } from "react";
 import { api } from "~/trpc/react";
 import Image from "next/image";
@@ -16,9 +15,8 @@ const ArtistSearch = () => {
         setDebouncedInputValue(inputValue);
       }
     }, 1000);
-
     return () => clearTimeout(delayInputTimeoutId);
-  }, [inputValue, 1000]);
+  }, [inputValue, selectAnswer]);
 
   // api call for artist search
   const artistSearch = api.game.getArtist.useQuery(
@@ -30,18 +28,25 @@ const ArtistSearch = () => {
         !gameInfo.roundOver,
     },
   );
+
+  const handleSelection = (artistName: string) => {
+    setSelectAnswer(artistName);
+    setInputValue(artistName);
+    setDebouncedInputValue(""); // Clear the debounced input to dismiss the list
+  };
+
   return (
     <div className="flex w-3/5 flex-col">
       <input
         type="text"
-        className="h-12 w-full rounded-md bg-stone-100  p-2 text-base text-black lg:text-xl"
+        className="h-12 w-full rounded-md bg-stone-100 p-2 text-base text-black lg:text-xl"
         placeholder="Guess the artist"
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
       />
       <div
         className={`mt-2 flex w-full flex-col gap-1 rounded-md ${
-          gameInfo.roundOver ? " hidden " : ""
+          gameInfo.roundOver ? "hidden" : ""
         }`}
       >
         {artistSearch.isLoading && artistSearch.fetchStatus !== "idle" ? (
@@ -56,10 +61,7 @@ const ArtistSearch = () => {
           artistSearch.data.artistResult.map((artist) => (
             <button
               key={artist.id}
-              onClick={() => {
-                setSelectAnswer(artist.name);
-                setInputValue(artist.name);
-              }}
+              onClick={() => handleSelection(artist.name)}
               className="flex w-full items-center justify-start gap-3 rounded-sm border-b border-black bg-stone-100 p-2 text-sm text-black ring-blue-600 selection:z-10 selection:ring-2 hover:bg-stone-200 focus:bg-stone-200 focus:ring-4 focus:ring-blue-500 lg:text-xl"
             >
               <Image
@@ -67,7 +69,7 @@ const ArtistSearch = () => {
                 height={40}
                 src={artist.imageUrl ?? "/images/artist.png"}
                 alt="artist"
-                className="h-10  w-10 self-center rounded-full bg-cover text-center text-xs lg:h-14 lg:w-14"
+                className="h-10 w-10 self-center rounded-full bg-cover text-center text-xs lg:h-14 lg:w-14"
               />
               {artist.name}
             </button>

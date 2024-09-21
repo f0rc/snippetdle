@@ -41,7 +41,7 @@ export default function CassettePlayer({
   }, [isPlaying]);
 
   return (
-    <div className="relative z-20 flex h-[200px] w-full items-center justify-center rounded-2xl bg-[#1e2121] md:h-[350px]">
+    <div className="relative z-20 flex h-[200px] w-full items-center justify-center rounded-2xl bg-[#212424] md:h-[350px]">
       {/* side clips ons */}
       <div className="absolute -left-4 bottom-24 rounded-3xl bg-[#1e2121] md:h-28 md:w-10"></div>
       <div className="absolute -right-4 bottom-24 rounded-3xl bg-[#1e2121] md:h-28 md:w-10"></div>
