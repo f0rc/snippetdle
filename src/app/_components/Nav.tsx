@@ -19,7 +19,7 @@ const Nav = ({ session }: { session: Session | null }) => {
 
             <ul className="flex-1" />
             <ul className="flex gap-4">
-              <li className="hidden items-center justify-end rounded-md p-2 hover:bg-black/20 lg:flex">
+              {/* <li className="hidden items-center justify-end rounded-md p-2 hover:bg-black/20 lg:flex">
                 <a href="/customgame" className="text-xl font-semibold">
                   Custom Games
                 </a>
@@ -29,12 +29,12 @@ const Nav = ({ session }: { session: Session | null }) => {
                 <a href="/browseplaylists" className="text-xl font-semibold">
                   Browse Playlists
                 </a>
-              </li>
+              </li> */}
 
               {/* <button className="rounded-md p-2 font-semibold hover:bg-black/20">
                 Log In
               </button> */}
-              {session ? (
+              {/* {session ? (
                 <SignoutDialog />
               ) : (
                 <a
@@ -43,9 +43,9 @@ const Nav = ({ session }: { session: Session | null }) => {
                 >
                   Sign In
                 </a>
-              )}
+              )} */}
 
-              <button
+              {/* <button
                 className="rounded-md p-2 font-semibold hover:bg-black/20 lg:hidden"
                 onClick={() => setSidebarOpen((p) => !p)}
               >
@@ -63,12 +63,12 @@ const Nav = ({ session }: { session: Session | null }) => {
                     d="M3.75 9h16.5m-16.5 6.75h16.5"
                   />
                 </svg>
-              </button>
+              </button> */}
             </ul>
           </div>
         </nav>
       </div>
-      {sidebarOpen && (
+      {/* {sidebarOpen && (
         <>
           <div
             className="fixed top-0 z-20 h-full w-full flex-1 bg-black/50 transition-all duration-300 ease-in-out"
@@ -108,7 +108,7 @@ const Nav = ({ session }: { session: Session | null }) => {
             </div>
           </div>
         </>
-      )}
+      )} */}
     </>
   );
 };
