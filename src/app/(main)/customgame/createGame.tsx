@@ -1,17 +1,17 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { spotifyPlaylistUrlPattern } from "~/styles/utils/spotifyRegex";
 import { api } from "~/trpc/react";
-import { spotifyPlaylistUrlPattern } from "~/utils/spotifyRegex";
 
 function CreateGame() {
   const router = useRouter();
   // const { toast } = useToast(); TODO add toast
   const createPlaylist = api.game.createPlaylist.useMutation({
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       router.push("/playlist/" + data.playlistId);
     },
-    onError: (error) => {
+    onError: (error: any) => {
       if (error.message === "Playlist already exists") {
         setForm({
           ...form,
@@ -122,7 +122,7 @@ function CreateGame() {
 
         <div className="flex w-full flex-col gap-4">
           <div className="flex flex-col gap-2">
-            <p className="text-sm uppercase text-red-500">
+            <p className="text-sm text-red-500 uppercase">
               {form.spotifyUrlError}
             </p>
             <label htmlFor="spotifyUrl" className="font-semibold uppercase">
@@ -140,7 +140,7 @@ function CreateGame() {
           </div>
 
           <div className="flex flex-col gap-2">
-            <p className="text-sm uppercase text-red-500">
+            <p className="text-sm text-red-500 uppercase">
               {form.playlistNameError}
             </p>
             <label htmlFor="spotifyUrl" className="font-semibold uppercase">
@@ -160,7 +160,7 @@ function CreateGame() {
 
           <button
             onClick={handleSubmit}
-            className="rounded-md bg-neutral-600 px-4 py-2 font-semibold uppercase text-white transition-colors duration-300 ease-in-out hover:bg-neutral-700"
+            className="rounded-md bg-neutral-600 px-4 py-2 font-semibold text-white uppercase transition-colors duration-300 ease-in-out hover:bg-neutral-700"
           >
             Submit
           </button>

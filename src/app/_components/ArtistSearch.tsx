@@ -58,7 +58,7 @@ const ArtistSearch = () => {
             error
           </div>
         ) : artistSearch.data && inputValue ? (
-          artistSearch.data.artistResult.map((artist) => (
+          artistSearch.data.artistResult.map((artist: any) => (
             <button
               key={artist.id}
               onClick={() => handleSelection(artist.name)}

@@ -1,6 +1,5 @@
 import { gt } from "drizzle-orm";
 import { env } from "~/env";
-import type { dbType } from "~/server/db";
 import { spotifySecret } from "~/server/db/schema";
 
 export interface SpotifyResponse {
@@ -131,7 +130,7 @@ export interface VideoThumbnail {
   url: null;
 }
 
-export const getSpotifyToken = async ({ db }: { db: dbType }) => {
+export const getSpotifyToken = async ({ db }: { db: any }) => {
   const spotifyAccessToken = await db.query.spotifySecret.findFirst({
     where: gt(spotifySecret.expires_in, new Date().valueOf().toString()),
   });

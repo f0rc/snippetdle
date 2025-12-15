@@ -1,51 +1,30 @@
-import { relations, sql } from "drizzle-orm";
-import {
-  boolean,
-  index,
-  integer,
-  numeric,
-  pgTable,
-  primaryKey,
-  serial,
-  text,
-  timestamp,
-  uuid,
-  date,
-  varchar,
-} from "drizzle-orm/pg-core";
-import type { AdapterAccount } from "next-auth/adapters";
-
-/**
- * This is an example of how to use the multi-project schema feature of Drizzle ORM. Use the same
- * database instance for multiple projects.
- *
- * @see https://orm.drizzle.team/docs/goodies#multi-project-schema
- */
+import { relations } from "drizzle-orm";
+import { index, pgTable, primaryKey } from "drizzle-orm/pg-core";
+import { type AdapterAccount } from "next-auth/adapters";
 
 export const posts = pgTable(
   "post",
-  {
-    id: serial("id").primaryKey(),
-    name: varchar("name", { length: 256 }),
-    createdById: varchar("createdById", { length: 255 }).notNull(),
-    createdAt: timestamp("created_at")
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
-    updatedAt: timestamp("updatedAt"),
-  },
-  (example) => ({
-    createdByIdIdx: index("createdById_idx").on(example.createdById),
-    nameIndex: index("name_idx").on(example.name),
+  (d) => ({
+    id: d.serial().primaryKey(), // Use serial() instead of generatedByDefaultAsIdentity()
+    name: d.varchar(),
+    createdById: d.varchar().notNull(),
+    created_at: d.timestamp().defaultNow().notNull(),
+    updatedAt: d.timestamp(),
   }),
+  (t) => [
+    index("createdById_idx").on(t.createdById),
+    index("name_idx").on(t.name),
+  ],
 );
-export const users = pgTable("user", {
-  id: text("id").notNull().primaryKey(),
-  name: text("name"),
-  email: text("email").notNull(),
-  emailVerified: timestamp("emailVerified", { mode: "date" }),
-  image: text("image"),
-  role: text("role").notNull().default("user"),
-});
+
+export const users = pgTable("user", (d) => ({
+  id: d.text().notNull().primaryKey(), // text, not varchar
+  name: d.text(), // text, not varchar
+  email: d.text().notNull(), // text, not varchar
+  emailVerified: d.timestamp({ mode: "date" }), // No timezone
+  image: d.text(), // text, not varchar
+  role: d.text().notNull().default("user"), // text, not varchar
+}));
 
 export const usersRelations = relations(users, ({ many }) => ({
   accounts: many(accounts),
@@ -54,39 +33,44 @@ export const usersRelations = relations(users, ({ many }) => ({
 
 export const accounts = pgTable(
   "account",
-  {
-    userId: text("userId")
+  (d) => ({
+    userId: d
+      .text() // text, not varchar
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    type: text("type").$type<AdapterAccount["type"]>().notNull(),
-    provider: text("provider").notNull(),
-    providerAccountId: text("providerAccountId").notNull(),
-    refresh_token: text("refresh_token"),
-    access_token: text("access_token"),
-    expires_at: integer("expires_at"),
-    token_type: text("token_type"),
-    scope: text("scope"),
-    id_token: text("id_token"),
-    session_state: text("session_state"),
-  },
-  (account) => ({
-    compoundKey: primaryKey({
-      columns: [account.provider, account.providerAccountId],
-    }),
+    type: d.text().$type<AdapterAccount["type"]>().notNull(), // text, not varchar
+    provider: d.text().notNull(), // text, not varchar
+    providerAccountId: d.text().notNull(), // text, not varchar
+    refresh_token: d.text(),
+    access_token: d.text(),
+    expires_at: d.integer(),
+    token_type: d.text(), // text, not varchar
+    scope: d.text(), // text, not varchar
+    id_token: d.text(),
+    session_state: d.text(), // text, not varchar
   }),
+  (t) => [
+    primaryKey({ columns: [t.provider, t.providerAccountId] }),
+    index("account_user_id_idx").on(t.userId),
+  ],
 );
 
 export const accountsRelations = relations(accounts, ({ one }) => ({
   user: one(users, { fields: [accounts.userId], references: [users.id] }),
 }));
 
-export const sessions = pgTable("session", {
-  sessionToken: text("sessionToken").notNull().primaryKey(),
-  userId: text("userId")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  expires: timestamp("expires", { mode: "date" }).notNull(),
-});
+export const sessions = pgTable(
+  "session",
+  (d) => ({
+    sessionToken: d.text().notNull().primaryKey(), // text, not varchar
+    userId: d
+      .text() // text, not varchar
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    expires: d.timestamp({ mode: "date" }).notNull(), // No timezone
+  }),
+  (t) => [index("session_user_id_idx").on(t.userId)],
+);
 
 export const sessionsRelations = relations(sessions, ({ one }) => ({
   user: one(users, { fields: [sessions.userId], references: [users.id] }),
@@ -94,150 +78,129 @@ export const sessionsRelations = relations(sessions, ({ one }) => ({
 
 export const verificationTokens = pgTable(
   "verificationToken",
-  {
-    identifier: text("identifier").notNull(),
-    token: text("token").notNull(),
-    expires: timestamp("expires", { mode: "date" }).notNull(),
-  },
-  (vt) => ({
-    compoundKey: primaryKey({ columns: [vt.identifier, vt.token] }),
+  (d) => ({
+    identifier: d.text().notNull(), // text, not varchar
+    token: d.text().notNull(), // text, not varchar
+    expires: d.timestamp({ mode: "date" }).notNull(), // No timezone
   }),
+  (t) => [primaryKey({ columns: [t.identifier, t.token] })],
 );
 
 export const spotifySecret = pgTable(
   "spotifySecret",
-  {
-    access_token: text("access_token").primaryKey(),
-    expires_in: numeric("expires_in").notNull(),
-  },
-  (spotifySecret) => ({
-    spotifyIndex: index("spotifyIndex").on(spotifySecret.access_token),
+  (d) => ({
+    access_token: d.text().primaryKey(),
+    expires_in: d.numeric().notNull(),
   }),
+  (t) => [index("spotifyIndex").on(t.access_token)],
 );
 
 export const Song = pgTable(
   "Song",
-  {
-    id: uuid("id").unique().defaultRandom().notNull(),
-    preview_url: text("preview_url").notNull(),
-    album_name: text("album_name").notNull(),
-    album_image: text("album_image").notNull(),
-    album_release_date: text("album_release_date").notNull(),
-
-    artist_name: text("artist_name").notNull(),
-
-    playlistId: text("playlistId").array(),
-
-    isChallengeSong: boolean("isChallengeSong").default(false),
-
-    createdById: varchar("createdById").notNull(),
-    createdAt: timestamp("created_at")
-      .default(sql`CURRENT_TIMESTAMP`)
+  (d) => ({
+    id: d
+      .uuid()
+      .unique()
+      .$defaultFn(() => crypto.randomUUID())
       .notNull(),
-    updatedAt: timestamp("updatedAt").default(sql`CURRENT_TIMESTAMP`),
-  },
-  (song) => ({
-    pk: primaryKey({ columns: [song.album_name, song.artist_name] }),
-    songIndex: index("id_idx").on(song.id),
+    preview_url: d.text().notNull(),
+    album_name: d.text().notNull(),
+    album_image: d.text().notNull(),
+    album_release_date: d.text().notNull(),
+    artist_name: d.text().notNull(),
+    playlistId: d.text().array(),
+    isChallengeSong: d.boolean().default(false),
+    createdById: d.varchar().notNull(), // No length constraint
+    created_at: d.timestamp().defaultNow().notNull(), // Use created_at, not createdAt
+    updatedAt: d.timestamp(), // No timezone
   }),
+  (t) => [
+    primaryKey({ columns: [t.album_name, t.artist_name] }),
+    index("id_idx").on(t.id),
+  ],
 );
 
-export const playlist = pgTable("playlist", {
-  id: text("id").primaryKey(),
-  name: varchar("name").notNull(),
-  playlistImage: text("playlistImage"),
-  playlistDescription: text("playlistDescription"),
-  createdById: varchar("createdById").notNull(),
-  createdAt: timestamp("created_at")
-    .default(sql`CURRENT_TIMESTAMP`)
-    .notNull(),
-  updatedAt: timestamp("updatedAt").default(sql`CURRENT_TIMESTAMP`),
-});
+export const playlist = pgTable("playlist", (d) => ({
+  id: d.text().primaryKey(),
+  name: d.varchar().notNull(), // No length constraint
+  playlistImage: d.text(),
+  playlistDescription: d.text(),
+  createdById: d.varchar().notNull(), // No length constraint
+  created_at: d.timestamp().defaultNow().notNull(), // Use created_at, not createdAt
+  updatedAt: d.timestamp(), // No timezone
+}));
 
-export const dailyChallenge = pgTable("dailyChallenge", {
-  id: uuid("id").primaryKey().defaultRandom(),
-
-  songId: uuid("songId")
+export const dailyChallenge = pgTable("dailyChallenge", (d) => ({
+  id: d
+    .uuid()
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  songId: d
+    .uuid()
     .notNull()
-    .references(() => Song.id, {
-      onDelete: "cascade",
-    }),
-  date: date("date", { mode: "string" }).notNull(),
-
-  createdById: varchar("createdById").notNull(),
-  createdAt: timestamp("created_at")
-    .default(sql`CURRENT_TIMESTAMP`)
-    .notNull(),
-  updatedAt: timestamp("updatedAt").default(sql`CURRENT_TIMESTAMP`),
-});
+    .references(() => Song.id, { onDelete: "cascade" }),
+  date: d.date({ mode: "string" }).notNull(),
+  createdById: d.varchar().notNull(), // No length constraint
+  created_at: d.timestamp().defaultNow().notNull(), // Use created_at, not createdAt
+  updatedAt: d.timestamp(), // No timezone
+}));
 
 export const artistSearchQuery = pgTable(
   "artistSearchQuery",
-  {
-    searchParam: varchar("searchParam", { length: 50 }).primaryKey(),
-  },
-  (t) => ({
-    searchParamIdx: index("searchParamIdx").on(t.searchParam),
+  (d) => ({
+    searchParam: d.varchar({ length: 50 }).primaryKey(),
   }),
+  (t) => [index("searchParamIdx").on(t.searchParam)],
 );
 
 export const artist = pgTable(
   "artist",
-  {
-    id: text("id").primaryKey(),
-    name: varchar("name").notNull(),
-    popularity: integer("popularity").notNull().default(0),
-    imageUrl: text("imageUrl"),
-    genere: text("genere").array(),
-    queryparam: text("queryparam").array(),
-  },
-  (t) => ({
-    artistIdx: index("artistIdx").on(t.name),
+  (d) => ({
+    id: d.text().primaryKey(),
+    name: d.varchar().notNull(), // No length constraint
+    popularity: d.integer().notNull().default(0),
+    imageUrl: d.text(),
+    genere: d.text().array(),
+    queryparam: d.text().array(),
   }),
+  (t) => [index("artistIdx").on(t.name)],
 );
 
 export const game = pgTable(
   "game",
-  {
-    id: uuid("id").defaultRandom().primaryKey(),
-    userIp: text("userIp").notNull(),
-    userAgent: text("userAgent").notNull(),
-    dailyChallenge: boolean("dailyChallenge").default(false).notNull(),
-    playlistId: text("playlistId").notNull(),
-    songsPlayed: uuid("songPlayed").array().notNull(),
-
-    createdById: text("createdById").references(() => users.id),
-    createdAt: timestamp("created_at")
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
-
-    updatedAt: timestamp("updatedAt"),
-  },
-  (example) => ({
-    createdByIdIdx: index("game_createdById_idx").on(example.createdById),
+  (d) => ({
+    id: d
+      .uuid()
+      .$defaultFn(() => crypto.randomUUID())
+      .primaryKey(),
+    userIp: d.text().notNull(),
+    userAgent: d.text().notNull(),
+    dailyChallenge: d.boolean().default(false).notNull(),
+    playlistId: d.text().notNull(),
+    songPlayed: d.uuid().array().notNull(), // Use songPlayed, not songsPlayed
+    createdById: d.text().references(() => users.id),
+    created_at: d.timestamp().defaultNow().notNull(), // Use created_at, not createdAt
+    updatedAt: d.timestamp(), // No timezone
   }),
+  (t) => [index("game_createdById_idx").on(t.createdById)],
 );
 
-export const roundInfo = pgTable("round_info", {
-  id: uuid("id").defaultRandom().primaryKey(),
-
-  gameId: uuid("gameId")
-    .references(() => game.id, {
-      onDelete: "cascade",
-    })
+export const roundInfo = pgTable("round_info", (d) => ({
+  id: d
+    .uuid()
+    .$defaultFn(() => crypto.randomUUID())
+    .primaryKey(),
+  gameId: d
+    .uuid()
+    .references(() => game.id, { onDelete: "cascade" })
     .notNull(),
-
-  isOver: boolean("isOver").default(false),
-
-  songId: uuid("game_songId")
+  isOver: d.boolean().default(false),
+  game_songId: d // Use game_songId, not songId
+    .uuid()
     .references(() => Song.id)
     .notNull(),
-
-  attempts: integer("attempts").notNull(),
-  guess: text("guess").array(),
-
-  createdById: text("createdById").references(() => users.id),
-  createdAt: timestamp("created_at")
-    .default(sql`CURRENT_TIMESTAMP`)
-    .notNull(),
-});
+  attempts: d.integer().notNull(),
+  guess: d.text().array(),
+  createdById: d.text().references(() => users.id),
+  created_at: d.timestamp().defaultNow().notNull(), // Use created_at, not createdAt
+}));

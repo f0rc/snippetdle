@@ -8,6 +8,8 @@ import { Loader } from "../_components/Loader";
 export default function Home() {
   const { data, isSuccess, isLoading } = api.game.getDailyChallenge.useQuery();
 
+  console.log(data);
+
   const { setGameInfo } = useGameInfo();
 
   const fetchDailyLocalStorage = (gameId: string): boolean => {

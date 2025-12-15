@@ -15,8 +15,8 @@ import {
 } from "~/server/db/schema";
 import { eq, ilike, or, sql } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
-import type { dailyChallengeType } from "~/trpc/utils";
 import { type ArtistAPIType } from "./spotify/Artist";
+import type { dailyChallengeType } from "~/styles/utils/utils";
 
 export const gameRouter = createTRPCRouter({
   createPlaylist: protectedProcedure

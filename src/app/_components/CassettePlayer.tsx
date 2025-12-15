@@ -43,13 +43,13 @@ export default function CassettePlayer({
   return (
     <div className="relative z-20 flex h-[200px] w-full items-center justify-center rounded-2xl bg-[#1e2121] md:h-[350px]">
       {/* side clips ons */}
-      <div className="absolute -left-4 bottom-24 rounded-3xl bg-[#1e2121] md:h-28 md:w-10"></div>
+      <div className="absolute bottom-24 -left-4 rounded-3xl bg-[#1e2121] md:h-28 md:w-10"></div>
       <div className="absolute -right-4 bottom-24 rounded-3xl bg-[#1e2121] md:h-28 md:w-10"></div>
 
       {/* screw holes */}
-      <div className="absolute right-4 top-4 h-3 w-3 rounded-full bg-white"></div>
-      <div className="absolute left-4 top-4 h-3 w-3 rounded-full bg-white"></div>
-      <div className="absolute bottom-4 right-4 h-3 w-3 rounded-full bg-white"></div>
+      <div className="absolute top-4 right-4 h-3 w-3 rounded-full bg-white"></div>
+      <div className="absolute top-4 left-4 h-3 w-3 rounded-full bg-white"></div>
+      <div className="absolute right-4 bottom-4 h-3 w-3 rounded-full bg-white"></div>
       <div className="absolute bottom-4 left-4 h-3 w-3 rounded-full bg-white"></div>
 
       <div className="flex h-4/5 w-4/5 flex-col rounded-2xl bg-[#4b545e] p-4 pb-10 md:pb-2">
@@ -58,7 +58,7 @@ export default function CassettePlayer({
           <div className="bg-black p-2 text-lg font-bold md:p-4 md:text-4xl">
             A
           </div>
-          <div className="flex h-full w-full flex-col  items-center justify-center gap-y-4">
+          <div className="flex h-full w-full flex-col items-center justify-center gap-y-4">
             {/* make 3 lines  */}
             {tapeText ? (
               tapeText.map((text, index) => (
@@ -94,7 +94,7 @@ export default function CassettePlayer({
 
           {showPlayButton ? (
             <button
-              className=" flex items-center justify-center"
+              className="flex items-center justify-center"
               onClick={() => {
                 handlePlay();
               }}
@@ -170,12 +170,12 @@ export default function CassettePlayer({
         </div>
 
         {/* random text */}
-        <div className=" flex flex-row justify-between ">
-          <p className="hidden text-xs font-bold uppercase text-white sm:block md:text-xl">
+        <div className="flex flex-row justify-between">
+          <p className="hidden text-xs font-bold text-white uppercase sm:block md:text-xl">
             {dailyChallenge ? "Daily Challenge Edition" : "Snippetdle Edition"}
           </p>
 
-          <p className="hidden text-xs font-bold uppercase text-white sm:block md:text-xl">
+          <p className="hidden text-xs font-bold text-white uppercase sm:block md:text-xl">
             EC-30 <span className="text-xs md:text-base">S</span>
           </p>
         </div>

@@ -1,4 +1,5 @@
-import { createTRPCRouter } from "~/server/api/trpc";
+import { postRouter } from "~/server/api/routers/post";
+import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 import { gameRouter } from "./routers/dailyChallenge";
 import { playlistRouter } from "./routers/playlist";
 import { playlistGame } from "./routers/playlistChallenege";
@@ -16,3 +17,12 @@ export const appRouter = createTRPCRouter({
 
 // export type definition of API
 export type AppRouter = typeof appRouter;
+
+/**
+ * Create a server-side caller for the tRPC API.
+ * @example
+ * const trpc = createCaller(createContext);
+ * const res = await trpc.post.all();
+ *       ^? Post[]
+ */
+export const createCaller = createCallerFactory(appRouter);

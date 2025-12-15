@@ -1,9 +1,9 @@
-import { getServerAuthSession } from "~/server/auth";
+import { getSession } from "next-auth/react";
 import CreateGame from "./createGame";
 import { redirect } from "next/navigation";
 
 async function page() {
-  const session = await getServerAuthSession();
+  const session = await getSession();
 
   if (!session) {
     redirect("/signin");

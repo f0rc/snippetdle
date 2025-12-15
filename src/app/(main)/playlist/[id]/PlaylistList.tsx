@@ -10,7 +10,7 @@ const PlaylistList = ({ songs }: { songs: getPlaylistSongstype[] }) => {
   return (
     <>
       {showSongs ? (
-        <ul className="flex flex-col items-start justify-center ">
+        <ul className="flex flex-col items-start justify-center">
           {songs.map((song) => (
             <li
               key={song.id}
@@ -23,7 +23,7 @@ const PlaylistList = ({ songs }: { songs: getPlaylistSongstype[] }) => {
                 src={song.album_image}
                 alt={song.album_name}
               />
-              <div className=" flex flex-col gap-1">
+              <div className="flex flex-col gap-1">
                 <p className="text-xl">{song.album_name}</p>
 
                 <p className="text-xl">{song.artist_name}</p>
@@ -37,7 +37,7 @@ const PlaylistList = ({ songs }: { songs: getPlaylistSongstype[] }) => {
           onClick={() => {
             setShowSongs((prev) => !prev);
           }}
-          className="rounded-md bg-neutral-600 px-4 py-6 font-semibold uppercase text-white transition-colors duration-300 ease-in-out hover:bg-neutral-700"
+          className="rounded-md bg-neutral-600 px-4 py-6 font-semibold text-white uppercase transition-colors duration-300 ease-in-out hover:bg-neutral-700"
         >
           ***SPOILERS*** Show Songs
         </button>

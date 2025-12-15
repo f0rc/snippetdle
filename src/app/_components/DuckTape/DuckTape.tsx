@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import "./duck.css";
-import { tapeText } from "../CassettePlayer";
+import type { tapeText } from "../CassettePlayer";
 
 export const DuckTape = ({
   index,
@@ -30,7 +30,7 @@ export const DuckTape = ({
         }}
       >
         <h1
-          className={`max-w-20 md:max-w-40 w-20 truncate text-center font-mono text-base font-semibold text-black md:w-60 md:text-xl`}
+          className={`w-20 max-w-20 truncate text-center font-mono text-base font-semibold text-black md:w-60 md:max-w-40 md:text-xl`}
           style={{
             zIndex: index + 1,
           }}

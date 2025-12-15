@@ -2,27 +2,29 @@
  * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially useful
  * for Docker builds.
  */
-await import("./src/env.js");
+import "./src/env.js";
 
 /** @type {import("next").NextConfig} */
 const config = {
-  images: {
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "i.scdn.co",
-        pathname: "/**/*",
-      },
-      {
-        protocol: "https",
-        "hostname": "mosaic.scdn.co",
-        "pathname": "/**/*",
-      },
-      {
-        hostname: "seeded-session-images.scdn.co"
-      }
-    ],
-  },
+    images: {
+        remotePatterns: [
+            {
+                protocol: "https",
+                hostname: "i.scdn.co",
+                pathname: "/**/*",
+            },
+            {
+                protocol: "https",
+                hostname: "mosaic.scdn.co",
+                pathname: "/**/*",
+            },
+            {
+                protocol: "https",
+                hostname: "seeded-session-images.scdn.co",
+                pathname: "/**/*",
+            },
+        ],
+    },
 };
 
 export default config;

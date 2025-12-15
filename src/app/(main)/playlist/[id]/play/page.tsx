@@ -48,7 +48,7 @@ const NewGamePage = ({ params }: { params: { id: string } }) => {
     if (playlistData.data) {
       const playedSongIds = gameInfo.songsPlayed.map((song) => song.id);
       const unplayedSongs = playlistData.data.songs.filter(
-        (song) => !playedSongIds.includes(song.id),
+        (song: any) => !playedSongIds.includes(song.id),
       );
 
       // console.log(unplayedSongs);
@@ -136,7 +136,7 @@ const NewGamePage = ({ params }: { params: { id: string } }) => {
           {!gameInfo.gameOver && (
             <button
               onClick={nextRoundHanler}
-              className="flex rounded-md bg-yellow-500 px-4 py-2  font-semibold uppercase text-black transition-colors duration-300 ease-in-out hover:bg-yellow-400 focus:bg-yellow-400 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-opacity-50"
+              className="focus:ring-opacity-50 flex rounded-md bg-yellow-500 px-4 py-2 font-semibold text-black uppercase transition-colors duration-300 ease-in-out hover:bg-yellow-400 focus:bg-yellow-400 focus:ring-2 focus:ring-yellow-500 focus:outline-none"
             >
               {gameInfo.songsPlayed.length < (gameInfo.totalRounds ?? 0)
                 ? "Next Round"
