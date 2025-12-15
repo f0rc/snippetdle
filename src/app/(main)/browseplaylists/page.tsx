@@ -1,17 +1,31 @@
+"use client";
+
 import Image from "next/image";
-import { api } from "~/trpc/server";
+import { api } from "~/trpc/react";
 
 const Page = async () => {
   const offset = 0;
 
-  const playlists = await api.playlist.getPlaylistList.query({
+  const {
+    data: playlists,
+    isLoading,
+    isError,
+  } = api.playlist.getPlaylistList.useQuery({
     offset: offset,
     sortType: "newest",
   });
 
+  if (isLoading) {
+    return <div>Loading playlists...</div>;
+  }
+
+  if (isError) {
+    return <div>Error loading playlists</div>;
+  }
+
   return (
     <div className="mx-auto grid max-w-4xl gap-6 p-4 py-12 md:grid-cols-3">
-      {playlists.map((playlist: any, index: any) => {
+      {playlists?.map((playlist: any, index: any) => {
         return (
           <div
             className="relative overflow-hidden rounded-xl border border-neutral-700 transition-all duration-300 hover:scale-105"

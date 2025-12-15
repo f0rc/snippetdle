@@ -34,8 +34,7 @@ export const playlistGame = createTRPCRouter({
           playlistId: input.playlistId,
           createdById: ctx.session.user.id,
           dailyChallenge: false,
-
-          songsPlayed: [song[0].id],
+          songPlayed: [song[0].id],
         })
         .returning();
 
@@ -52,9 +51,9 @@ export const playlistGame = createTRPCRouter({
       const createRound = await ctx.db
         .insert(roundInfo)
         .values({
+          game_songId: `${song[0].id}`,
           attempts: 0,
           gameId: gameInfoRes[0].id,
-          songId: song[0].id,
           createdById: ctx.session.user.id,
         })
         .returning();

@@ -2,17 +2,19 @@
 
 import { api } from "~/trpc/react";
 import Game from "~/app/_components/Game";
-import { useEffect } from "react";
+import { use, useEffect } from "react";
 import { useGameInfo } from "~/app/_components/State/useGameInfo";
 import GameOver from "~/app/_components/GameOver";
 import { Loader } from "~/app/_components/Loader";
 
-const NewGamePage = ({ params }: { params: { id: string } }) => {
+const NewGamePage = ({ params }: { params: Promise<{ id: string }> }) => {
+  const { id } = use(params);
+
   const { setGameInfo, gameInfo, handleRoundSubmit } = useGameInfo();
 
   const createGameApi = api.playlistGame.createGame.useQuery(
     {
-      playlistId: params.id,
+      playlistId: id,
     },
     {
       refetchOnWindowFocus: false,
@@ -21,7 +23,7 @@ const NewGamePage = ({ params }: { params: { id: string } }) => {
     },
   );
 
-  const playlistData = api.playlist.getPlaylist.useQuery({ id: params.id });
+  const playlistData = api.playlist.getPlaylist.useQuery({ id });
 
   useEffect(() => {
     // init game state
@@ -76,13 +78,10 @@ const NewGamePage = ({ params }: { params: { id: string } }) => {
             roundOver: false,
           }));
         } else {
-          // console.log("no random song");
         }
 
         return;
       } else {
-        // console.log("yeah");
-        // no songs left game over
         setGameInfo((p) => ({
           ...p,
           gameRound: [
@@ -98,7 +97,6 @@ const NewGamePage = ({ params }: { params: { id: string } }) => {
         }));
       }
     }
-    // no songs left game over
 
     setGameInfo((p) => ({
       ...p,
@@ -107,12 +105,9 @@ const NewGamePage = ({ params }: { params: { id: string } }) => {
   };
 
   const nextRoundHanler = async () => {
-    // check if round is over then call func
     if (gameInfo.roundOver) {
       getRandomSongFromPlaylist();
-    }
-    // else fill the reset with skips
-    else {
+    } else {
       const roundsLeft = 6 - gameInfo.roundInfo.length;
       console.log("rounds Left", roundsLeft, gameInfo.roundInfo.length);
       for (let i = 0; i < roundsLeft; i++) {

@@ -51,7 +51,7 @@ export const playlistRouter = createTRPCRouter({
           album_name,
           album_release_date,
           artist_name,
-          createdAt,
+          created_at,
           isChallengeSong,
           preview_url,
         }) => ({
@@ -60,7 +60,7 @@ export const playlistRouter = createTRPCRouter({
           album_name,
           album_release_date,
           artist_name,
-          createdAt,
+          created_at,
           isChallengeSong,
           preview_url,
         }),
@@ -88,7 +88,7 @@ export const playlistRouter = createTRPCRouter({
       // TODO: Implement sorting
 
       const playlists = await ctx.db.query.playlist.findMany({
-        orderBy: (playlist, { desc }) => [desc(playlist.createdAt)],
+        orderBy: (playlist, { desc }) => [desc(playlist.created_at)],
 
         limit: 10,
         offset: input.offset,
@@ -104,7 +104,7 @@ export type getPlaylistSongstype = {
   album_name: string;
   album_release_date: string;
   artist_name: string;
-  createdAt: Date;
+  created_at: Date;
   isChallengeSong: boolean | null;
   preview_url: string;
 };
