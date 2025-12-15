@@ -62,7 +62,7 @@ export const authOptions: NextAuthOptions = {
       };
     },
   },
-  adapter: DrizzleAdapter(db, nextAuthSchema, pgTable) as Adapter,
+  adapter: DrizzleAdapter(db) as Adapter,
   providers: [
     DiscordProvider({
       clientId: env.AUTH_DISCORD_CLIENT_ID,
